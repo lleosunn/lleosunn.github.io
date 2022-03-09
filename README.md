@@ -8,7 +8,7 @@
   <tr>
     <td>5.1</td>
     <td>Beneficial and Harmful Effects</td>
-    <td><a href="5.1">LINK</a></td>
+    <td><a href="51">LINK</a></td>
   </tr>
   <tr>
     <td>5.2</td>
