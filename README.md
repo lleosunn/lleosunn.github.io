@@ -1,4 +1,12 @@
 ## Test Prep study
-
-| Unit                               | Notes                                                                                           | Quiz Score |
-| 5.1 Beneficial and Harmful Effects | (Journal)[https://docs.google.com/document/d/1D9EFBbrpxCbC7HtMOhrLgIzld0QalYkHe2dFdwnxnBE/edit] | 3/3        |
+<table>
+  <tr>
+    <th>Unit</th>
+    <th>Notes</th>
+    <th>Quiz Score</th>
+  </tr>
+  <tr>
+    <td>5.1 Beneficial and Harmful Effects</td>
+    <td><a href="https://docs.google.com/document/d/1D9EFBbrpxCbC7HtMOhrLgIzld0QalYkHe2dFdwnxnBE/edit">Journal</a></td>
+    <td>3/3</td>
+</table>
