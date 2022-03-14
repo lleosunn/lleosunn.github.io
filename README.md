@@ -52,7 +52,7 @@
   </tr>
   <tr>
     <td>Week 0: Plans, Team, Jobs</td>
-    <td><a href="https://github.com/cwang999/n22p5-coders/issues/11">LINK</a></td>
+    <td><a href="https://github.com/lleosunn/lleosunn.github.io/issues/1">LINK</a></td>
     <td><a href="https://github.com/cwang999/n22p5-coders/issues/12">LINK</a></td>
   </tr>
 </table>
