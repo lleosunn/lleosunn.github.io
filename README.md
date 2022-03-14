@@ -20,12 +20,12 @@
 ## Data Structures Project
 <table>
   <tr>
-    <th>Code Snippets</th>
+    <th>Replit</th>
     <th>Code</th>
     <th>Runtime</th>
   </tr>
   <tr>
-    <td>link</td>
+    <td><a href="https://replit.com/@lleosunn/n22p5-coders#main.py">replit</a></td>
     <td>link</td>
     <td>link</td>
   </tr>
