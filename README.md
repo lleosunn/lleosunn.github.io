@@ -30,12 +30,12 @@
 ## Data Structures Project
 <table>
   <tr>
-    <th>Replit</th>
+    <th>Name</th>
     <th>Code</th>
     <th>Runtime</th>
   </tr>
   <tr>
-    <td><a href="https://replit.com/@lleosunn/n22p5-coders#main.py">replit</a></td>
+    <td>TT0 Python Menu, Replit, Github</td>
     <td>link</td>
     <td>link</td>
   </tr>
