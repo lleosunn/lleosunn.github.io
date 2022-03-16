@@ -30,12 +30,12 @@
 ## Data Structures Project
 <table>
   <tr>
-    <th>Code Snippets</th>
+    <th>Replit</th>
     <th>Code</th>
     <th>Runtime</th>
   </tr>
   <tr>
-    <td>link</td>
+    <td><a href="https://replit.com/@lleosunn/n22p5-coders#main.py">replit</a></td>
     <td>link</td>
     <td>link</td>
   </tr>
@@ -48,7 +48,21 @@
     <th>Runtime</th>
   </tr>
   <tr>
+    <td><a href="https://github.com/BrianZhang2016/067/wiki/PBL-Feature-with-Create-Performance-Task-(Leo&Stanley)">create task plan</a></td>
     <td>link</td>
-    <td>link</td>
+  </tr>
+</table>
+
+## Review Tickets
+<table>
+  <tr>
+    <th>Week</th>
+    <th>Individual</th>
+    <th>Team</th>
+  </tr>
+  <tr>
+    <td>Week 0: Plans, Team, Jobs</td>
+    <td><a href="https://github.com/lleosunn/lleosunn.github.io/issues/1">LINK</a></td>
+    <td><a href="https://github.com/cwang999/n22p5-coders/issues/12">LINK</a></td>
   </tr>
 </table>
