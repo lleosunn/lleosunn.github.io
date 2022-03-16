@@ -15,6 +15,16 @@
     <td>Digital Divide</td>
     <td><a href="52">LINK</a></td>
   </tr>
+  <tr>
+    <td>5.3</td>
+    <td>Computing Bias</td>
+    <td><a href="53">LINK</a></td>
+  </tr>
+  <tr>
+    <td>5.4</td>
+    <td>Crowdsourcing</td>
+    <td><a href="54">LINK</a></td>
+  </tr>
 </table>
 
 ## Data Structures Project
