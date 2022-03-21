@@ -1,8 +1,8 @@
 def swap(age1, age2):
     if age1 > age2:
-        temp = age1
+        x = age1
         age1 = age2
-        age2 = temp
+        age2 = x
     return "Numbers are " + str(age1) + " " + str(age2)
 
 

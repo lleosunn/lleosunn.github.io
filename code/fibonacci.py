@@ -1,21 +1,21 @@
-def fib(num):
-	if num <= 0:
+def fib(n):
+	if n <= 0:
 		return [0]
 	seq = [0,1]
-	while len(seq) < num:
-		yo = len(seq)
-		new = seq[yo - 1] + seq[yo - 2]
+	while len(seq) < n:
+		yeah = len(seq)
+		new = seq[yeah - 1] + seq[yeah - 2]
 		seq.append(new)
 	return seq
 	
 
 def tester():
-    num = int(input("Enter a number for Fibonacci Sequence: "))
+    n = int(input("Enter a number for Fibonacci Sequence: "))
     # check if the number is negative
-    if num < 0:
-        print("Sorry, Fibonacci Sequence does not exist for negative numbers")
+    if n < 0:
+        print("Please enter a positive integer")
     else:
-        print("The fibbonacci sequence of ", num, "is", fib(num))
+        print("The first", n, "terms of the Fibonacci Sequence is", fib(n))
 
 if __name__ == "__main__":
    # stuff only to run when not called via 'import' here
