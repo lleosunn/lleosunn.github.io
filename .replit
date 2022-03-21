@@ -1,2 +1,3 @@
 language = "bash"
 run = "python3 code/main.py"
+run = "python3 code/infodb.py"
