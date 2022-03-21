@@ -34,7 +34,7 @@ def recursive_loop(i = 0): #loop increments on n + 1 until each condition is met
 		recursive_loop(i + 1)
 
 def tester():
-	num = int(input("Pick a number for a loop? 1=while, 2=for, 3=recursive"))
+	num = int(input("Pick a number for a loop? 1: while, 2: for, 3: recursive"))
 	print(num)
 	print(type(num))
 	if num == 1:
