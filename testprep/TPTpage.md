@@ -1,6 +1,6 @@
 {% include navigation.html %}
 
-## Test Prep study
+# Test Prep study
 <table>
   <tr>
     <th>Unit</th>
