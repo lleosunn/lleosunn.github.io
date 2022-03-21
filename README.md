@@ -14,7 +14,7 @@
   </tr>
   <tr>
     <td>Week 1: Lists and Loops</td>
-    <td><a href="">LINK</a></td>
-    <td><a href="">LINK</a></td>
+    <td><a href="https://github.com/lleosunn/lleosunn.github.io/issues/2">LINK</a></td>
+    <td><a href="https://github.com/cwang999/n22p5-coders/issues/14">LINK</a></td>
   </tr>
 </table>
