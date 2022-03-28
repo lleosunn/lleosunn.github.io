@@ -1,13 +1,14 @@
 from fibonacci import fib
 from infodb import *
 from factorial import *
+from average import *
 main_menu = [
   ["Matrix", "code/matrix.py"],
   ["Swap", "code/swap.py"],
 	["Fibonacci Sequence", "code/fibonacci.py"],
 	["Info DB", "code/infodb.py"],
 	["Factorial", "code/factorial.py"],
-
+  ["Average", "code/average.py"]
 ]
 
 # Submenu list of [Prompt, Action]

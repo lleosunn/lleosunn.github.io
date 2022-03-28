@@ -8,12 +8,12 @@ class Factorial:
 			return n * self(n-1)
 
 def tester():
-    number = int(input("Enter a number to factorial: "))
+    num = int(input("Enter a positive integer: "))
     try:
-        yeah = Factorial() 
-        print("Answer:", yeah(number))   
+        fac = Factorial() 
+        print("Answer:", fac(num))   
     except:
-        print("Please enter a positive integer.")   
+        print("Sorry, something went wrong.")   
 
 if __name__ == "__main__":
-    tester=()
+    tester()
