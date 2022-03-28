@@ -19,7 +19,7 @@
   </tr>
   <tr>
     <td>Week 2: Classy Functions</td>
-    <td><a href="">LINK</a></td>
+    <td><a href="https://github.com/lleosunn/lleosunn.github.io/issues/4">LINK</a></td>
     <td><a href="https://github.com/cwang999/n22p5-coders/issues/16">LINK</a></td>
   </tr>
 </table>
