@@ -1,18 +1,21 @@
 from fibonacci import fib
 from infodb import *
+from factorial import *
 main_menu = [
-    ["Matrix", "code/matrix.py"],
-    ["Swap", "code/swap.py"],
+  ["Matrix", "code/matrix.py"],
+  ["Swap", "code/swap.py"],
 	["Fibonacci Sequence", "code/fibonacci.py"],
 	["Info DB", "code/infodb.py"],
+	["Factorial", "code/factorial.py"],
+
 ]
 
 # Submenu list of [Prompt, Action]
 # Works similarly to main_menu
 sub_menu = [
-    ["ship", "patterns/ship.py"],
-	["blowfish", "patterns/blowfish.py"],
-	["tree", "patterns/tree.py"],
+  ["ship", "code/week0/ship.py"],
+	["blowfish", "code/week0/blowfish.py"],
+	["tree", "code/week0/tree.py"],
 ]
 
 # Menu banner is typically defined by menu owner
