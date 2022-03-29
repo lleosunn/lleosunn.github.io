@@ -2,13 +2,12 @@ from fibonacci import fib
 from infodb import *
 from factorial import *
 from average import *
+
+
+
+
 main_menu = [
-  ["Matrix", "code/matrix.py"],
-  ["Swap", "code/swap.py"],
-	["Fibonacci Sequence", "code/fibonacci.py"],
 	["Info DB", "code/infodb.py"],
-	["Factorial", "code/factorial.py"],
-  ["Average", "code/average.py"]
 ]
 
 # Submenu list of [Prompt, Action]
@@ -19,6 +18,16 @@ sub_menu = [
 	["tree", "code/week0/tree.py"],
 ]
 
+
+math_sub_menu = [
+	["Matrix", "code/matrix.py"],
+	["Swap", "code/swap.py"],
+	["Fibonacci Sequence", "code/fibonacci.py"],
+	["Factorial", "code/factorial.py"],
+	["Average", "code/average.py"]
+]
+
+
 # Menu banner is typically defined by menu owner
 border = "=" * 25
 banner = f"\n{border}\nPlease Select An Option\n{border}"
@@ -28,10 +37,11 @@ banner = f"\n{border}\nPlease Select An Option\n{border}"
 # 1. main menu and submenu reference are created [Prompts, Actions]
 # 2. menu_list is sent as parameter to menuy.menu function that has logic for menu control
 def menu():
-    title = "Function Menu" + banner
-    menu_list = main_menu.copy()
-    menu_list.append(["Patterns", submenu])
-    buildMenu(title, menu_list)
+	title = "Function Menu" + banner
+	menu_list = main_menu.copy()
+	menu_list.append(["Patterns", submenu])
+	menu_list.append(["Math", math_submenu])
+	buildMenu(title, menu_list)
 
 # def submenu
 # using sub menu list above:
@@ -45,6 +55,18 @@ def submenu():
     title = "Function Submenu" + banner
     buildMenu(title, sub_menu)
 
+def math_submenuc():
+    title = "submenu" + banner
+    m = submenus.Menu(title, math_sub_menu)
+    m.menu()
+
+
+def math_submenu():
+    title = "submenu" + banner
+    buildMenu(title, math_sub_menu)
+
+
+	
 # builds console menu
 def buildMenu(banner, options):
     print(banner)
