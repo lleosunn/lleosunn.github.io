@@ -2,12 +2,14 @@ from week1.fibonacci import fib
 from week1.infodb import *
 from week2.factorial import *
 from week2.average import *
-
+from week3.password import *
 
 
 
 main_menu = [
 	["Info DB", "code/week1/infodb.py"],
+	["Password Generator", "code/week3/password.py"],
+
 ]
 
 # Submenu list of [Prompt, Action]

@@ -15,4 +15,6 @@ def gen():
 	
 	print("".join(password))
 
-gen()
+
+if __name__ == "__main__":
+    gen()
