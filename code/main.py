@@ -1,30 +1,30 @@
-from fibonacci import fib
-from infodb import *
-from factorial import *
-from average import *
+from week1.fibonacci import fib
+from week1.infodb import *
+from week2.factorial import *
+from week2.average import *
 
 
 
 
 main_menu = [
-	["Info DB", "code/infodb.py"],
+	["Info DB", "code/week1/infodb.py"],
 ]
 
 # Submenu list of [Prompt, Action]
 # Works similarly to main_menu
 sub_menu = [
-  ["ship", "code/week0/ship.py"],
-	["blowfish", "code/week0/blowfish.py"],
-	["tree", "code/week0/tree.py"],
+  ["ship", "patterns/ship.py"],
+	["blowfish", "patterns/blowfish.py"],
+	["tree", "patterns/tree.py"],
 ]
 
 
 math_sub_menu = [
-	["Matrix", "code/matrix.py"],
-	["Swap", "code/swap.py"],
-	["Fibonacci Sequence", "code/fibonacci.py"],
-	["Factorial", "code/factorial.py"],
-	["Average", "code/average.py"]
+	["Matrix", "code/week0/matrix.py"],
+	["Swap", "code/week0/swap.py"],
+	["Fibonacci Sequence", "code/week1/fibonacci.py"],
+	["Factorial", "code/week2/factorial.py"],
+	["Average", "code/week2/average.py"]
 ]
 
 
