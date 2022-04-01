@@ -3,7 +3,16 @@ from week1.infodb import *
 from week2.factorial import *
 from week2.average import *
 from week3.password import *
+import sys
+from time import sleep
 
+welcome = "Leo Sun's Algorithms\n"
+
+def yo():
+  for x in welcome:
+    print(x, end='')
+    sys.stdout.flush()
+    sleep(0.1)
 
 
 main_menu = [
@@ -111,4 +120,5 @@ def buildMenu(banner, options):
 
 
 if __name__ == "__main__":
-    menu()
+	yo()
+	menu()
