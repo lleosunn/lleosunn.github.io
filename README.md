@@ -22,4 +22,9 @@
     <td><a href="https://github.com/lleosunn/lleosunn.github.io/issues/4">LINK</a></td>
     <td><a href="https://github.com/cwang999/n22p5-coders/issues/16">LINK</a></td>
   </tr>
+  <tr>
+    <td>Week 3: Algorithmic Final <a href="https://youtu.be/nc0wlDTbnNY">(Video Here)</a></td>
+    <td><a href="https://github.com/lleosunn/lleosunn.github.io/issues/5">LINK</a></td>
+    <td></td>
+  </tr>
 </table>
