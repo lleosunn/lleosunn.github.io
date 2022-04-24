@@ -37,4 +37,14 @@
     <td>Safe Computing</td>
     <td><a href="56">LINK</a></td>
   </tr>
+  <tr>
+    <td>Final</td>
+    <td>Practice MCQ #1</td>
+    <td><a href="mc1">LINK</a></td>
+  </tr>
+  <tr>
+    <td>Final</td>
+    <td>Practice MCQ #2</td>
+    <td><a href="mc2">LINK</a></td>
+  </tr>
 </table>
