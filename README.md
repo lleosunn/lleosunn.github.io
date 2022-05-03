@@ -33,8 +33,13 @@
     <td></td>
   </tr>
   <tr>
-    <td>Week 5: Proctored MCQ Week1 : Quiz1, Quiz2 Scores (Go to Test Prep tab)</td>
+    <td>Week 5: Proctored MCQ Week1: Quiz1, Quiz2 Scores (Go to Test Prep tab)</td>
     <td><a href="https://github.com/lleosunn/lleosunn.github.io/issues/8">LINK</a></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 6: Proctored MCQ Week2: Quiz3 and Create Task Review (Go to Test Prep tab)</a></td>
+    <td><a href="https://github.com/lleosunn/lleosunn.github.io/issues/9">LINK</a></td>
     <td></td>
   </tr>
 </table>
