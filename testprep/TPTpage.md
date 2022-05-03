@@ -47,4 +47,9 @@
     <td>Practice MCQ #2</td>
     <td><a href="mc2">LINK</a></td>
   </tr>
+  <tr>
+    <td>Final</td>
+    <td>Practice MCQ #3</td>
+    <td><a href="mc3">LINK</a></td>
+  </tr>
 </table>
