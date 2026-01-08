@@ -1,11 +1,11 @@
 ---
-title: Scorpion
-description: Competition robot for FIRST Tech Challenge POWERPLAY.
+title: Lecturizer
+description: An AI assistant that transcribes and summarizes lecture audio.
 author: Leo Sun
-date: 2023-03-12
+date: 2024-11-10
 image:
-  path: /assets/img/robot.JPG
-  alt: Scorpion
+  path: /assets/img/lecturizer.png
+  alt: Lecturizer
 ---
 
 ## Headings

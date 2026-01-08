@@ -1,11 +1,11 @@
 ---
-title: Scorpion
-description: Competition robot for FIRST Tech Challenge POWERPLAY.
+title: Worldspace
+description: Haptic robotic arm for excavator operation.
 author: Leo Sun
-date: 2023-03-12
+date: 2025-02-02
 image:
-  path: /assets/img/robot.JPG
-  alt: Scorpion
+  path: /assets/img/worldspace.png
+  alt: Worldspace
 ---
 
 ## Headings

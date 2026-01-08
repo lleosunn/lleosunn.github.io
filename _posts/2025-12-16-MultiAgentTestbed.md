@@ -1,11 +1,11 @@
 ---
-title: Scorpion
-description: Competition robot for FIRST Tech Challenge POWERPLAY.
+title: Multi-Agent Testbed
+description: Multi-robot testbed for warehouse robotics.
 author: Leo Sun
-date: 2023-03-12
+date: 2025-12-16
 image:
-  path: /assets/img/robot.JPG
-  alt: Scorpion
+  path: /assets/img/warehouserobotics.png
+  alt: Multi-Agent Testbed
 ---
 
 ## Headings

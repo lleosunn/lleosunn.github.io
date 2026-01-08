@@ -1,11 +1,11 @@
 ---
-title: Scorpion
-description: Competition robot for FIRST Tech Challenge POWERPLAY.
+title: Self-Driving Car
+description: Quanser Self-Driving Car Student Compettiion at the 2025 American Control Conference.
 author: Leo Sun
-date: 2023-03-12
+date: 2025-07-08
 image:
-  path: /assets/img/robot.JPG
-  alt: Scorpion
+  path: /assets/img/selfdrivingcar.png
+  alt: Self-Driving Car
 ---
 
 ## Headings
