@@ -1,6 +1,6 @@
 ---
 title: Self-Driving Car
-description: Quanser Self-Driving Car Student Compettiion at the 2025 American Control Conference.
+description: Quanser Self-Driving Car Student Competition at the 2025 American Control Conference.
 author: Leo Sun
 date: 2025-07-08
 image:
