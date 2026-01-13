@@ -9,31 +9,27 @@ image:
 ---
 
 ## Overview
-**Lecturizer** is an AI-powered lecture transcription and summarization tool built during **WHACK 2024 (Wellesley College Hackathon)**. It addresses a common student challenge: retaining key information from long, fast-paced lectures.
-
-Classes at Wellesley, MIT, and Tufts often exceed an hour in length, making sustained attention difficult. Lecturizer was designed to make lecture review easier by turning raw audio into concise, structured summaries.
+Lecturizer is an AI-powered lecture transcription and summarization tool built during WHACK 2024 (Wellesley College Hackathon). It addresses a common student challenge: retaining key information from long, fast-paced lectures. Lecturizer was designed to make lecture review easier by turning raw audio into concise, structured summaries.
 
 ---
 
 ## System & Features
 Lecturizer allows users to upload or record lecture audio through a web interface and automatically converts it into summarized text for efficient studying.
 
-**Key features:**
+Key features:
 - Audio upload and in-browser recording
-- Speech-to-text transcription using **OpenAI Whisper**
-- Transformer-based summarization using **DistilBART**
+- Speech-to-text transcription using OpenAI Whisper
+- Transformer-based summarization using DistilBART
 - Chunking logic to handle long transcripts
 - Support for MP3, WAV, OGG, FLAC, and WebM formats
 - Location-based consent checks to comply with U.S. recording laws
 
-The backend was built in **Python with Flask**, while the frontend uses **HTML, CSS, and JavaScript**. The system was validated on **20+ lecture recordings**, achieving a ~**70% reduction** in transcript length while preserving core ideas.
+The backend was built in Python with Flask, while the frontend uses HTML, CSS, and JavaScript. The system was validated on 20+ lecture recordings, achieving a ~70% reduction in transcript length while preserving core ideas.
 
 ---
 
 ## Challenges & Results
-Key challenges included handling recording consent laws, processing WebM recordings consistently, and balancing summarization speed with accuracy. These were addressed through a consent disclaimer flow, server-side file handling, and benchmarking multiple transformer models.
-
-The final system provides reliable audio-to-text transcription, fast summarization, robust error handling, and a user-friendly lecture review workflow.
+Key challenges included handling recording consent laws and balancing summarization speed with accuracy. These were addressed through a consent disclaimer flow and benchmarking multiple transformer models. The final system provides reliable audio-to-text transcription, fast summarization, robust error handling, and a user-friendly lecture review workflow.
 
 ---
 
