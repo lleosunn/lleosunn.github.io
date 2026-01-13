@@ -4,7 +4,7 @@ description: Multi-robot testbed for warehouse robotics.
 author: Leo Sun
 date: 2025-12-16
 image:
-  path: /assets/img/warehouserobotics.png
+  path: /assets/img/20251216Warehouse/warehouserobotics.png
   alt: Multi-Agent Testbed
 ---
 
