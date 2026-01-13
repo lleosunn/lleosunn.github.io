@@ -4,184 +4,75 @@ description: Quanser Self-Driving Car Student Competition at the 2025 American C
 author: Leo Sun
 date: 2025-07-08
 image:
-  path: /assets/img/selfdrivingcar.png
+  path: /assets/img/20250708SelfDrivingCar/selfdrivingcar.png
   alt: Self-Driving Car
 ---
 
-## Headings
+## Overview
+I participated in the **Quanser Self-Driving Car Student Competition**, held at the **2025 American Control Conference (ACC)** in Denver, Colorado. The competition simulated an Uber-like autonomous driving environment, where teams programmed a self-driving car to navigate a city map, pick up passengers, drop them off at target locations, and return to a home base while obeying traffic laws.
 
-<!-- markdownlint-capture -->
-<!-- markdownlint-disable -->
-# H1 — heading
-{: .mt-4 .mb-0 }
+Teams were scored based on the **complexity and number of routes completed** within a fixed time limit.
 
-## H2 — heading
-{: data-toc-skip='' .mt-4 .mb-0 }
+---
 
-### H3 — heading
-{: data-toc-skip='' .mt-4 .mb-0 }
+## Team Structure & My Role
+Our team of three divided the system into three core components:
+- **Perception:** Camera-based detection of stop signs and traffic lights
+- **State Estimation:** Localization using LiDAR and wheel encoders
+- **Control:** Path planning and trajectory tracking
 
-#### H4 — heading
-{: data-toc-skip='' .mt-4 }
-<!-- markdownlint-restore -->
+I was responsible for the **control subsystem**, focusing on global path planning and low-level path following for an Ackermann-drive vehicle.
 
-## Paragraph
+---
 
-Quisque egestas convallis ipsum, ut sollicitudin risus tincidunt a. Maecenas interdum malesuada egestas. Duis consectetur porta risus, sit amet vulputate urna facilisis ac. Phasellus semper dui non purus ultrices sodales. Aliquam ante lorem, ornare a feugiat ac, finibus nec mauris. Vivamus ut tristique nisi. Sed vel leo vulputate, efficitur risus non, posuere mi. Nullam tincidunt bibendum rutrum. Proin commodo ornare sapien. Vivamus interdum diam sed sapien blandit, sit amet aliquam risus mattis. Nullam arcu turpis, mollis quis laoreet at, placerat id nibh. Suspendisse venenatis eros eros.
+## Control System Design
 
-## Lists
+### Roadmap & Path Planning
+To support flexible route selection, I designed a **directed graph roadmap** consisting of **52 nodes**, connected by a combination of straight-line segments and circular arcs.
 
-### Ordered list
+The roadmap encoded:
+- Road geometry
+- Legal driving directions
+- Locations of stop signs, traffic lights, and yield signs
 
-1. Firstly
-2. Secondly
-3. Thirdly
+I implemented **Dijkstra’s algorithm** on this roadmap to compute shortest paths between arbitrary pickup and drop-off locations, enabling efficient route planning during competition runs.
 
-### Unordered list
+<!-- IMAGE: Planned roadmap -->
+![Planned roadmap](/assets/img/20250708SelfDrivingCar/drawnroadmap.jpg)
+_Hand-designed roadmap representing the competition environment_
 
-- Chapter
-  - Section
-    - Paragraph
+<!-- IMAGE: Coded roadmap -->
+![Coded roadmap](/assets/img/20250708SelfDrivingCar/codedroadmap.png)
+_Directed graph implementation with line segments and arcs used for path planning_
 
-### ToDo list
+---
 
-- [ ] Job
-  - [x] Step 1
-  - [x] Step 2
-  - [ ] Step 3
+### Path Following & Control
+For trajectory tracking, I implemented a **Pure Pursuit controller** using **ROS 2 and Python**.
 
-### Description list
+Key features:
+- Ackermann steering-compatible control
+- Smooth tracking of both straight and curved path segments
+- Real-time command generation for vehicle steering and velocity
 
-Sun
-: the star around which the earth orbits
+This controller allowed the car to reliably follow planned routes from point A to point B under nominal conditions.
 
-Moon
-: the natural satellite of the earth, visible by reflected light from the sun
+---
 
-## Block Quote
+## Competition Results & Lessons Learned
+Our team competed at ACC and placed **6th out of 28 teams**.
 
-> This line shows the _block quote_.
+While our control system performed as intended, overall performance was affected by system-level issues:
+- **Traffic light detection failures** in the vision system caused penalties for running red lights
+- **Movable foam-core walls** in the environment reduced localization accuracy
+- As a result, we prioritized **simpler routes** over longer, more complex ones
 
-## Prompts
+Despite these challenges, the competition provided valuable experience working with **ROS 2**, multi-module autonomous systems, and the realities of deploying autonomy in imperfect, real-world environments.
 
-<!-- markdownlint-capture -->
-<!-- markdownlint-disable -->
-> An example showing the `tip` type prompt.
-{: .prompt-tip }
+---
 
-> An example showing the `info` type prompt.
-{: .prompt-info }
+## Demo
 
-> An example showing the `warning` type prompt.
-{: .prompt-warning }
-
-> An example showing the `danger` type prompt.
-{: .prompt-danger }
-<!-- markdownlint-restore -->
-
-## Tables
-
-| Company                      | Contact          | Country |
-| :--------------------------- | :--------------- | ------: |
-| Alfreds Futterkiste          | Maria Anders     | Germany |
-| Island Trading               | Helen Bennett    |      UK |
-| Magazzini Alimentari Riuniti | Giovanni Rovelli |   Italy |
-
-## Links
-
-<http://127.0.0.1:4000>
-
-## Footnote
-
-Click the hook will locate the footnote[^footnote], and here is another footnote[^fn-nth-2].
-
-## Inline code
-
-This is an example of `Inline Code`.
-
-## Filepath
-
-Here is the `/path/to/the/file.extend`{: .filepath}.
-
-## Code blocks
-
-### Common
-
-```text
-This is a common code snippet, without syntax highlight and line number.
-```
-
-### Specific Language
-
-```bash
-if [ $? -ne 0 ]; then
-  echo "The command was not successful.";
-  #do the needful / exit
-fi;
-```
-
-### Specific filename
-
-```sass
-@import
-  "colors/light-typography",
-  "colors/dark-typography";
-```
-{: file='_sass/jekyll-theme-chirpy.scss'}
-
-## Mathematics
-
-The mathematics powered by [**MathJax**](https://www.mathjax.org/):
-
-$$
-\begin{equation}
-  \sum_{n=1}^\infty 1/n^2 = \frac{\pi^2}{6}
-  \label{eq:series}
-\end{equation}
-$$
-
-We can reference the equation as \eqref{eq:series}.
-
-When $a \ne 0$, there are two solutions to $ax^2 + bx + c = 0$ and they are
-
-$$ x = {-b \pm \sqrt{b^2-4ac} \over 2a} $$
-
-## Mermaid SVG
-
-```mermaid
- gantt
-  title  Adding GANTT diagram functionality to mermaid
-  apple :a, 2017-07-20, 1w
-  banana :crit, b, 2017-07-23, 1d
-  cherry :active, c, after b a, 1d
-```
-
-## Images
-
-### Default (with caption)
-
-_Full screen width and center alignment_
-
-### Left aligned
-
-### Float to left
-
-Praesent maximus aliquam sapien. Sed vel neque in dolor pulvinar auctor. Maecenas pharetra, sem sit amet interdum posuere, tellus lacus eleifend magna, ac lobortis felis ipsum id sapien. Proin ornare rutrum metus, ac convallis diam volutpat sit amet. Phasellus volutpat, elit sit amet tincidunt mollis, felis mi scelerisque mauris, ut facilisis leo magna accumsan sapien. In rutrum vehicula nisl eget tempor. Nullam maximus ullamcorper libero non maximus. Integer ultricies velit id convallis varius. Praesent eu nisl eu urna finibus ultrices id nec ex. Mauris ac mattis quam. Fusce aliquam est nec sapien bibendum, vitae malesuada ligula condimentum.
-
-### Float to right
-
-Praesent maximus aliquam sapien. Sed vel neque in dolor pulvinar auctor. Maecenas pharetra, sem sit amet interdum posuere, tellus lacus eleifend magna, ac lobortis felis ipsum id sapien. Proin ornare rutrum metus, ac convallis diam volutpat sit amet. Phasellus volutpat, elit sit amet tincidunt mollis, felis mi scelerisque mauris, ut facilisis leo magna accumsan sapien. In rutrum vehicula nisl eget tempor. Nullam maximus ullamcorper libero non maximus. Integer ultricies velit id convallis varius. Praesent eu nisl eu urna finibus ultrices id nec ex. Mauris ac mattis quam. Fusce aliquam est nec sapien bibendum, vitae malesuada ligula condimentum.
-
-### Dark/Light mode & Shadow
-
-The image below will toggle dark/light mode based on theme preference, notice it has shadows.
-
-
-## Video
-
-{% include embed/youtube.html id='Balreaj8Yqs' %}
-
-## Reverse Footnote
-
-[^footnote]: The footnote source
-[^fn-nth-2]: The 2nd footnote source
+<!-- VIDEO: Self-driving car demo -->
+{% include embed/youtube.html id='2KP8IuVTET8' %}
+_Demo of the car following a planned route during competition_
