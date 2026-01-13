@@ -4,184 +4,109 @@ description: Haptic robotic arm for excavator operation.
 author: Leo Sun
 date: 2025-02-02
 image:
-  path: /assets/img/worldspace.png
+  path: /assets/img/20250202Worldspace/worldspace.png
   alt: Worldspace
 ---
 
-## Headings
+## Overview
+**Worldspace** is a haptic robotic arm interface designed to mimic the kinematics and proportions of an excavator. It was used as the primary hardware platform in a research study investigating *The Effects of Haptic Feedback and Guidance in the Learning and Operation of Excavators*. The project studies how haptic feedback influences learning efficiency, control precision, and physical exertion when operating excavators through a robotic arm interface.
 
-<!-- markdownlint-capture -->
-<!-- markdownlint-disable -->
-# H1 — heading
-{: .mt-4 .mb-0 }
+I contributed across **human-subject experimentation, mechanical design, and real-time kinematics visualization**, supporting both the research and system development aspects of the project.
 
-## H2 — heading
-{: data-toc-skip='' .mt-4 .mb-0 }
+---
 
-### H3 — heading
-{: data-toc-skip='' .mt-4 .mb-0 }
+## Research & Experimental Setup
+We conducted controlled user studies comparing excavator operation across **four experimental conditions** to isolate the effects of both interface type and haptic feedback.
 
-#### H4 — heading
-{: data-toc-skip='' .mt-4 }
-<!-- markdownlint-restore -->
+The four experimental groups were:
+- Joystick control with haptic feedback
+- Joystick control without haptic feedback
+- Worldspace robotic arm with haptic feedback
+- Worldspace robotic arm without haptic feedback
 
-## Paragraph
+My contributions included:
+- Recruiting and assisting participants during experiments
+- Running and supervising **36+ hours of training simulations**
+- Setting up Unity-based excavation tasks and logging performance data
 
-Quisque egestas convallis ipsum, ut sollicitudin risus tincidunt a. Maecenas interdum malesuada egestas. Duis consectetur porta risus, sit amet vulputate urna facilisis ac. Phasellus semper dui non purus ultrices sodales. Aliquam ante lorem, ornare a feugiat ac, finibus nec mauris. Vivamus ut tristique nisi. Sed vel leo vulputate, efficitur risus non, posuere mi. Nullam tincidunt bibendum rutrum. Proin commodo ornare sapien. Vivamus interdum diam sed sapien blandit, sit amet aliquam risus mattis. Nullam arcu turpis, mollis quis laoreet at, placerat id nibh. Suspendisse venenatis eros eros.
+Results showed a **~50% reduction in operator force exertion** when haptic feedback was enabled, particularly when using the Worldspace interface, indicating improved ergonomics and control efficiency.
 
-## Lists
+---
 
-### Ordered list
+## Mechanical Design & Safety Improvements
 
-1. Firstly
-2. Secondly
-3. Thirdly
+### Wire Organizer Redesign
+One major mechanical contribution was redesigning a **wire organizer** that also functioned as a mechanical stop for the robotic arm.
 
-### Unordered list
+The original design:
+- Frequently broke under stress
+- Required unplugging and rethreading all wires to replace
 
-- Chapter
-  - Section
-    - Paragraph
+I designed a new **slot-based wire organizer** that:
+- Allowed wires to be routed without disconnecting
+- Greatly reduced replacement time
+- Improved durability and maintainability  
+This resulted in a **75%+ reduction in maintenance time**.
 
-### ToDo list
+<!-- IMAGE: Broken original wire organizer -->
+![Broken wire organizer](/assets/img/20250202Worldspace/brokenwireorganizer.jpeg)
+_Original wire organizer that frequently failed under mechanical stress_
 
-- [ ] Job
-  - [x] Step 1
-  - [x] Step 2
-  - [ ] Step 3
+<!-- IMAGE: Before and after wire organizer -->
+![Wire organizer before and after](/assets/img/20250202Worldspace/newwireorganizer.jpeg)
+_Redesigned slot-based wire organizer enabling faster maintenance and improved durability_
 
-### Description list
+---
 
-Sun
-: the star around which the earth orbits
+### Gripper Safety Structure
+Another safety-focused improvement addressed a finger injury risk in the gripper mechanism.
 
-Moon
-: the natural satellite of the earth, visible by reflected light from the sun
+Originally:
+- An exposed gap posed a risk of finger injury during operation
 
-## Block Quote
+I designed a **fan-like protective structure** that:
+- Expands and contracts with the gripper
+- Protects **3 out of 4 fingers** during operation
+- Significantly improves user safety compared to the original design
 
-> This line shows the _block quote_.
+<!-- IMAGE: Exposed gripper gap -->
+![Gripper gap](/assets/img/20250202Worldspace/grippergap.jpeg)
+_Exposed gap in the original gripper design presenting a finger injury risk_
 
-## Prompts
+<!-- VIDEO: Fan-like safety mechanism -->
+{% include embed/youtube.html id='DuPrVi4fDUE' %}
+_Fan-like safety structure during gripper operation_
 
-<!-- markdownlint-capture -->
-<!-- markdownlint-disable -->
-> An example showing the `tip` type prompt.
-{: .prompt-tip }
+---
 
-> An example showing the `info` type prompt.
-{: .prompt-info }
+## Kinematics & Real-Time Visualization
+I implemented real-time **forward kinematics** for the 4-DOF robotic arm to track joint positions and the excavator bucket tip in 3D space.
 
-> An example showing the `warning` type prompt.
-{: .prompt-warning }
+This work involved:
+- Computing 3D forward kinematics for each joint
+- Mapping bucket tip position for environment interaction
+- Enabling physics-based simulation such as soil dragging with haptic feedback
 
-> An example showing the `danger` type prompt.
-{: .prompt-danger }
-<!-- markdownlint-restore -->
+Technologies used:
+- **Python + Matplotlib** for real-time visualization
+- **C++ and Unity** for interactive simulation
 
-## Tables
+<!-- IMAGE: Forward kinematics math -->
+![Forward kinematics math](/assets/img/20250202Worldspace/fkmath.png)
+_Forward kinematics equations used to compute joint positions and excavator bucket tip location_
 
-| Company                      | Contact          | Country |
-| :--------------------------- | :--------------- | ------: |
-| Alfreds Futterkiste          | Maria Anders     | Germany |
-| Island Trading               | Helen Bennett    |      UK |
-| Magazzini Alimentari Riuniti | Giovanni Rovelli |   Italy |
+<!-- VIDEO: Forward kinematics in Matplotlib -->
+{% include embed/youtube.html id='jHiDDrZGDFw' %}
+_Real-time forward kinematics visualization in Matplotlib_
 
-## Links
+<!-- VIDEO: Forward kinematics in Unity -->
+{% include embed/youtube.html id='DOlMfPjqpgM' %}
+_Real-time forward kinematics visualization in Unity_
 
-<http://127.0.0.1:4000>
+---
 
-## Footnote
-
-Click the hook will locate the footnote[^footnote], and here is another footnote[^fn-nth-2].
-
-## Inline code
-
-This is an example of `Inline Code`.
-
-## Filepath
-
-Here is the `/path/to/the/file.extend`{: .filepath}.
-
-## Code blocks
-
-### Common
-
-```text
-This is a common code snippet, without syntax highlight and line number.
-```
-
-### Specific Language
-
-```bash
-if [ $? -ne 0 ]; then
-  echo "The command was not successful.";
-  #do the needful / exit
-fi;
-```
-
-### Specific filename
-
-```sass
-@import
-  "colors/light-typography",
-  "colors/dark-typography";
-```
-{: file='_sass/jekyll-theme-chirpy.scss'}
-
-## Mathematics
-
-The mathematics powered by [**MathJax**](https://www.mathjax.org/):
-
-$$
-\begin{equation}
-  \sum_{n=1}^\infty 1/n^2 = \frac{\pi^2}{6}
-  \label{eq:series}
-\end{equation}
-$$
-
-We can reference the equation as \eqref{eq:series}.
-
-When $a \ne 0$, there are two solutions to $ax^2 + bx + c = 0$ and they are
-
-$$ x = {-b \pm \sqrt{b^2-4ac} \over 2a} $$
-
-## Mermaid SVG
-
-```mermaid
- gantt
-  title  Adding GANTT diagram functionality to mermaid
-  apple :a, 2017-07-20, 1w
-  banana :crit, b, 2017-07-23, 1d
-  cherry :active, c, after b a, 1d
-```
-
-## Images
-
-### Default (with caption)
-
-_Full screen width and center alignment_
-
-### Left aligned
-
-### Float to left
-
-Praesent maximus aliquam sapien. Sed vel neque in dolor pulvinar auctor. Maecenas pharetra, sem sit amet interdum posuere, tellus lacus eleifend magna, ac lobortis felis ipsum id sapien. Proin ornare rutrum metus, ac convallis diam volutpat sit amet. Phasellus volutpat, elit sit amet tincidunt mollis, felis mi scelerisque mauris, ut facilisis leo magna accumsan sapien. In rutrum vehicula nisl eget tempor. Nullam maximus ullamcorper libero non maximus. Integer ultricies velit id convallis varius. Praesent eu nisl eu urna finibus ultrices id nec ex. Mauris ac mattis quam. Fusce aliquam est nec sapien bibendum, vitae malesuada ligula condimentum.
-
-### Float to right
-
-Praesent maximus aliquam sapien. Sed vel neque in dolor pulvinar auctor. Maecenas pharetra, sem sit amet interdum posuere, tellus lacus eleifend magna, ac lobortis felis ipsum id sapien. Proin ornare rutrum metus, ac convallis diam volutpat sit amet. Phasellus volutpat, elit sit amet tincidunt mollis, felis mi scelerisque mauris, ut facilisis leo magna accumsan sapien. In rutrum vehicula nisl eget tempor. Nullam maximus ullamcorper libero non maximus. Integer ultricies velit id convallis varius. Praesent eu nisl eu urna finibus ultrices id nec ex. Mauris ac mattis quam. Fusce aliquam est nec sapien bibendum, vitae malesuada ligula condimentum.
-
-### Dark/Light mode & Shadow
-
-The image below will toggle dark/light mode based on theme preference, notice it has shadows.
-
-
-## Video
-
-{% include embed/youtube.html id='Balreaj8Yqs' %}
-
-## Reverse Footnote
-
-[^footnote]: The footnote source
-[^fn-nth-2]: The 2nd footnote source
+## What I Learned
+- Designing **human-in-the-loop robotic systems**
+- Translating kinematic models into real-time visualizations
+- Improving safety and maintainability through mechanical design
+- Running and evaluating human-subject experiments with quantitative metrics
