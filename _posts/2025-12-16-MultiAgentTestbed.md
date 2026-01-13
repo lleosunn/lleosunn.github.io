@@ -8,180 +8,131 @@ image:
   alt: Multi-Agent Testbed
 ---
 
-## Headings
+## Overview
+This project explores **multi-agent path finding (MAPF)** in dense, warehouse-style environments, with a focus on the tradeoffs between **reactive collision avoidance** and **planning-based coordination**, and on transferring algorithms from simulation to real robots.
 
-<!-- markdownlint-capture -->
-<!-- markdownlint-disable -->
-# H1 — heading
-{: .mt-4 .mb-0 }
+I built a **multi-agent robotics testbed** spanning simulation and physical execution, enabling large-scale evaluation of MAPF algorithms and real-world validation on holonomic robots.
 
-## H2 — heading
-{: data-toc-skip='' .mt-4 .mb-0 }
+---
 
-### H3 — heading
-{: data-toc-skip='' .mt-4 .mb-0 }
+## System Architecture
+The testbed integrates:
+- **VMAS** for scalable multi-agent simulation
+- **ROS 2** for control, communication, and deployment
+- **Dockerized infrastructure** for reproducible experiments
+- **Holonomic mobile robots** (RoboMaster platform) for real-world testing
 
-#### H4 — heading
-{: data-toc-skip='' .mt-4 }
-<!-- markdownlint-restore -->
+Planning and control are run **centrally**, while physical robots act as low-level executors. This design enabled rapid iteration, large-scale testing, and sim-to-real transfer.
 
-## Paragraph
+---
 
-Quisque egestas convallis ipsum, ut sollicitudin risus tincidunt a. Maecenas interdum malesuada egestas. Duis consectetur porta risus, sit amet vulputate urna facilisis ac. Phasellus semper dui nofn purus ultrices sodales. Aliquam ante lorem, ornare a feugiat ac, finibus nec mauris. Vivamus ut tristique nisi. Sed vel leo vulputate, efficitur risus non, posuere mi. Nullam tincidunt bibendum rutrum. Proin commodo ornare sapien. Vivamus interdum diam sed sapien blandit, sit amet aliquam risus mattis. Nullam arcu turpis, mollis quis laoreet at, placerat id nibh. Suspendisse venenatis eros eros.
+## Algorithms Explored
 
-## Lists
+### Baseline: Move-to-Goal Control
+The initial approach used simple PID-based move-to-goal control for each agent.  
+While agents reached their goals efficiently, the lack of coordination resulted in **frequent collisions** as agent density increased.
 
-### Ordered list
+---
 
-1. Firstly
-2. Secondly
-3. Thirdly
+### Reactive Collision Avoidance
+A **repulsive force model** was added, causing agents to push away from one another within a fixed radius.
 
-### Unordered list
+This reduced collisions compared to the baseline, but introduced:
+- Oscillatory and non-smooth trajectories
+- Residual collisions due to lack of global planning
 
-- Chapter
-  - Section
-    - Paragraph
+<!-- GIF: Repulsive force avoidance (simulation) -->
+![Repulsive force avoidance GIF](/assets/img/20251216Warehouse/repulsive.gif)
+_Rudimentary repulsive-force collision avoidance in simulation_
 
-### ToDo list
+---
 
-- [ ] Job
-  - [x] Step 1
-  - [x] Step 2
-  - [ ] Step 3
+### Planning-Based Coordination (CBS)
+To enable principled coordination, the environment was discretized and a **Conflict-Based Search (CBS)** planner was implemented.
 
-### Description list
+Key features:
+- Individual, conflict-free paths per agent
+- Waiting actions and collision constraints handled explicitly
+- Planned paths converted to **splines** for smooth execution
+- **PID controllers** used to track spline trajectories
 
-Sun
-: the star around which the earth orbits
+<!-- GIF: CBS planning (simulation) -->
+![CBS planning GIF](/assets/img/20251216Warehouse/cbs.gif)
+_CBS-based planning with spline-interpolated trajectories_
 
-Moon
-: the natural satellite of the earth, visible by reflected light from the sun
+---
 
-## Block Quote
+## Evaluation & Results
+Planners were evaluated using:
+- **Collision count**
+- **Makespan** (total time for all agents to reach goals)
+- **400+ randomized simulations**
+- Agent counts ranging from **2 to 15**
 
-> This line shows the _block quote_.
+Outliers were filtered using a **1.5× IQR** rule, and results were analyzed across multiple random seeds.
 
-## Prompts
+Key findings:
+- **CBS planning reduced collisions by 84%+** compared to non-planning baselines
+- Planning consistently **increased makespan**, revealing a safety–efficiency tradeoff
+- As agent density increased, planning became increasingly beneficial
 
-<!-- markdownlint-capture -->
-<!-- markdownlint-disable -->
-> An example showing the `tip` type prompt.
-{: .prompt-tip }
+<!-- IMAGE: Collision reduction graph -->
+![Collision reduction vs agents](/assets/img/20251216Warehouse/graph1.png)
+_Delta collisions (no planning − planning) vs number of agents_
 
-> An example showing the `info` type prompt.
-{: .prompt-info }
+<!-- IMAGE: Makespan tradeoff graph -->
+![Makespan tradeoff vs agents](/assets/img/20251216Warehouse/graph2.png)
+_Delta completion time (no planning − planning) vs number of agents_
 
-> An example showing the `warning` type prompt.
-{: .prompt-warning }
+---
 
-> An example showing the `danger` type prompt.
-{: .prompt-danger }
-<!-- markdownlint-restore -->
+## Sim-to-Real Deployment
+To move beyond simulation, the system was deployed to **physical RoboMaster robots**.
 
-## Tables
+Key infrastructure improvements:
+- Migrated planning and control to a **centralized ROS 2 workstation**
+- Eliminated Docker reset and dependency issues on robots
+- Enabled synchronized multi-robot execution
 
-| Company                      | Contact          | Country |
-| :--------------------------- | :--------------- | ------: |
-| Alfreds Futterkiste          | Maria Anders     | Germany |
-| Island Trading               | Helen Bennett    |      UK |
-| Magazzini Alimentari Riuniti | Giovanni Rovelli |   Italy |
+---
 
-## Links
+## Localization & Control
+A vision-based localization pipeline was developed using:
+- Overhead webcams
+- **ArUco / ChArUco markers**
+- Camera calibration and global-frame anchoring
 
-<http://127.0.0.1:4000>
+This enabled:
+- Real-time pose estimation for multiple robots
+- Field-centric control
+- Independent P/PID control of \(x\), \(y\), and heading
 
-## Footnote
+Localization was validated with **two robots operating simultaneously**.
 
-Click the hook will locate the footnote[^footnote], and here is another footnote[^fn-nth-2].
+<!-- VIDEO: World anchor marker demonstration -->
+{% include embed/youtube.html id='l3Mjo0YqMfM' %}
+_Demonstration of ArUco/ChArUco world anchor markers establishing a global reference frame_
 
-## Inline code
+---
 
-This is an example of `Inline Code`.
+## Physical Robot Demonstration
 
-## Filepath
+<!-- VIDEO: Physical robot swap -->
+{% include embed/youtube.html id='585d7J6WR9s' %}
+_Two physical robots executing a coordinated swap maneuver_
 
-Here is the `/path/to/the/file.extend`{: .filepath}.
+---
 
-## Code blocks
+## Key Takeaways
+- Planning-based MAPF methods significantly improve safety at higher agent densities
+- Reactive methods are fast but insufficient for dense coordination
+- Centralized planning with distributed execution simplifies sim-to-real transfer
+- The resulting system functions as a **research-grade multi-robot testbed**
 
-### Common
+---
 
-```text
-This is a common code snippet, without syntax highlight and line number.
-```
-
-### Specific Language
-
-```bash
-if [ $? -ne 0 ]; then
-  echo "The command was not successful.";
-  #do the needful / exit
-fi;
-```
-
-### Specific filename
-
-```sass
-@import
-  "colors/light-typography",
-  "colors/dark-typography";
-```
-{: file='_sass/jekyll-theme-chirpy.scss'}
-
-## Mathematics
-
-The mathematics powered by [**MathJax**](https://www.mathjax.org/):
-
-$$
-\begin{equation}
-  \sum_{n=1}^\infty 1/n^2 = \frac{\pi^2}{6}
-  \label{eq:series}
-\end{equation}
-$$
-
-We can reference the equation as \eqref{eq:series}.
-
-When $a \ne 0$, there are two solutions to $ax^2 + bx + c = 0$ and they are
-
-$$ x = {-b \pm \sqrt{b^2-4ac} \over 2a} $$
-
-## Mermaid SVG
-
-```mermaid
- gantt
-  title  Adding GANTT diagram functionality to mermaid
-  apple :a, 2017-07-20, 1w
-  banana :crit, b, 2017-07-23, 1d
-  cherry :active, c, after b a, 1d
-```
-
-## Images
-
-### Default (with caption)
-
-_Full screen width and center alignment_
-
-### Left aligned
-
-### Float to left
-
-Praesent maximus aliquam sapien. Sed vel neque in dolor pulvinar auctor. Maecenas pharetra, sem sit amet interdum posuere, tellus lacus eleifend magna, ac lobortis felis ipsum id sapien. Proin ornare rutrum metus, ac convallis diam volutpat sit amet. Phasellus volutpat, elit sit amet tincidunt mollis, felis mi scelerisque mauris, ut facilisis leo magna accumsan sapien. In rutrum vehicula nisl eget tempor. Nullam maximus ullamcorper libero non maximus. Integer ultricies velit id convallis varius. Praesent eu nisl eu urna finibus ultrices id nec ex. Mauris ac mattis quam. Fusce aliquam est nec sapien bibendum, vitae malesuada ligula condimentum.
-
-### Float to right
-
-Praesent maximus aliquam sapien. Sed vel neque in dolor pulvinar auctor. Maecenas pharetra, sem sit amet interdum posuere, tellus lacus eleifend magna, ac lobortis felis ipsum id sapien. Proin ornare rutrum metus, ac convallis diam volutpat sit amet. Phasellus volutpat, elit sit amet tincidunt mollis, felis mi scelerisque mauris, ut facilisis leo magna accumsan sapien. In rutrum vehicula nisl eget tempor. Nullam maximus ullamcorper libero non maximus. Integer ultricies velit id convallis varius. Praesent eu nisl eu urna finibus ultrices id nec ex. Mauris ac mattis quam. Fusce aliquam est nec sapien bibendum, vitae malesuada ligula condimentum.
-
-### Dark/Light mode & Shadow
-
-The image below will toggle dark/light mode based on theme preference, notice it has shadows.
-
-
-## Video
-
-{% include embed/youtube.html id='Balreaj8Yqs' %}
-
-## Reverse Footnote
-
-[^footnote]: The footnote source
-[^fn-nth-2]: The 2nd footnote source
+## Next Steps
+- Deploy CBS planning directly on physical robots
+- Fuse vision and odometry with **EKF-based localization**
+- Integrate real-world obstacles and dynamic agents
+- Extend to mixed-reality scenarios (real + simulated robots)
