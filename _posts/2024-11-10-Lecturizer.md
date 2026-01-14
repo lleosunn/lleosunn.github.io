@@ -33,11 +33,6 @@ Key challenges included handling recording consent laws and balancing summarizat
 
 ---
 
-## What I Learned
-This project gave me hands-on experience integrating AI models into a full-stack application, working with speech-to-text and NLP pipelines, and designing software with legal and ethical constraints in mind.
-
----
-
 
 ## Demo
 <!-- VIDEO: Lecturizer demo -->
