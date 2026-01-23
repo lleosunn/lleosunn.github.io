@@ -89,18 +89,19 @@ Key infrastructure improvements:
 - Eliminated Docker reset and dependency issues on robots
 - Enabled synchronized multi-robot execution
 
----
+With the improved localization pipeline, CBS planning was fully deployed on the physical robots. The planner generated conflict-free global paths, which were then tracked by spline-based controllers on each RoboMaster platform.
 
 ## Localization & Control
 A vision-based localization pipeline was developed using:
-- Overhead webcams
-- ArUco / ChArUco markers
-- Camera calibration and global-frame anchoring
+- Overhead webcams  
+- ArUco / ChArUco markers  
+- Camera calibration and global-frame anchoring  
 
 This enabled:
-- Real-time pose estimation for multiple robots
-- Field-centric control
-- Independent P/PID control of \(x\), \(y\), and heading
+- Real-time pose estimation for multiple robots  
+- Field-centric control  
+- Independent P/PID control of \(x\), \(y\), and heading  
+- EKF-based fusion of dual-camera global measurements with dead reackoning measurements from onboard odometry 
 
 <!-- VIDEO: World anchor marker demonstration -->
 {% include embed/youtube.html id='l3Mjo0YqMfM' %}
@@ -110,14 +111,29 @@ _Demonstration of ArUco/ChArUco world anchor markers establishing a global refer
 
 ## Physical Robot Demonstration
 
-<!-- VIDEO: Physical robot swap -->
-{% include embed/youtube.html id='585d7J6WR9s' %}
-_Two physical robots executing a coordinated swap maneuver_
+<!-- VIDEO: Reactive swap scenario -->
+{% include embed/youtube.html id='oVyAGnIpTmg' %}
+_Reactive collision avoidance performing a two-robot swap (updated real-world video)_
+
+---
+
+## CBS Swap Scenario #1
+<!-- VIDEO: CBS swap scenario 1 -->
+{% include embed/youtube.html id='tr_jWie8u-0' %}
+_CBS-planned swap demonstrating coordinated, collision-free robot motion_
+
+---
+
+## CBS Swap Scenario #2
+<!-- VIDEO: CBS swap scenario 2 -->
+{% include embed/youtube.html id='rdYoAu8qrGc' %}
+_Another CBS-based swap scenario showing robust conflict handling_
 
 ---
 
 ## Next Steps
-- Deploy CBS planning directly on physical robots
-- Fuse vision and odometry with EKF-based localization
-- Integrate real-world obstacles and more agents
-- Extend to mixed-reality scenarios (real + simulated robots)
+- Scale CBS deployment to more robots in real environments  
+- Improve localization robustness under dynamic lighting and partial camera occlusions  
+- Add dynamic obstacles 
+- Experiment with decentralized or hybrid planning architectures  
+- Integrate predictive models to anticipate conflicts before planning
