@@ -6,8 +6,8 @@
   --text: #171717;
   --muted: #61605b;
   --line: #d8d5ca;
-  --accent: #1f6f61;
-  --accent-strong: #12483f;
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
   --shadow: 0 18px 45px rgba(23, 23, 23, 0.08);
   --radius: 8px;
   --max: 1120px;
@@ -21,8 +21,8 @@
   --text: #f2f2ed;
   --muted: #b8bab2;
   --line: #313936;
-  --accent: #8fd6c5;
-  --accent-strong: #b8eadf;
+  --accent: #93c5fd;
+  --accent-strong: #bfdbfe;
   --shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 }
 
@@ -71,8 +71,7 @@ img {
 
 .home-link,
 .theme-toggle,
-.inline-action,
-.back-link {
+.inline-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -86,7 +85,6 @@ img {
 }
 
 .home-link,
-.back-link,
 .inline-action {
   gap: 9px;
   padding: 0 14px;
@@ -95,7 +93,6 @@ img {
 }
 
 .home-link:hover,
-.back-link:hover,
 .inline-action:hover,
 .link-card:hover,
 .project-card:hover {
@@ -181,8 +178,8 @@ p {
 
 h1 {
   margin: 0;
-  font-size: clamp(4.6rem, 13vw, 10rem);
-  line-height: 0.9;
+  font-size: clamp(3.4rem, 10vw, 7.4rem);
+  line-height: 0.95;
   letter-spacing: 0;
 }
 
@@ -280,8 +277,8 @@ h1 {
 
 .project-card h3 {
   margin: 0;
-  font-size: clamp(2rem, 6vw, 4.2rem);
-  line-height: 0.95;
+  font-size: clamp(1.8rem, 4.7vw, 3.35rem);
+  line-height: 1;
   letter-spacing: 0;
 }
 
@@ -314,6 +311,40 @@ h1 {
   object-fit: cover;
 }
 
+.project-card__media--placeholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface)) 0 25%, transparent 25% 50%, color-mix(in srgb, var(--accent) 10%, var(--surface)) 50% 75%, transparent 75%),
+    var(--surface-strong);
+  background-size: 28px 28px;
+}
+
+.project-card__media--placeholder span {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.project-card__media--placeholder span:nth-child(1) {
+  top: 30%;
+  left: 26%;
+}
+
+.project-card__media--placeholder span:nth-child(2) {
+  top: 52%;
+  left: 52%;
+}
+
+.project-card__media--placeholder span:nth-child(3) {
+  right: 24%;
+  bottom: 28%;
+}
+
 .project-page,
 .simple-page {
   max-width: 920px;
@@ -325,10 +356,15 @@ h1 {
   padding: 34px 0 28px;
 }
 
-.project-hero h1,
+.project-hero h1 {
+  margin-top: 16px;
+  font-size: clamp(2.6rem, 6.5vw, 4.85rem);
+  line-height: 1;
+}
+
 .simple-page__header h1 {
   margin-top: 16px;
-  font-size: clamp(3.2rem, 9vw, 6.8rem);
+  font-size: clamp(3rem, 8vw, 5.8rem);
 }
 
 .project-lede,

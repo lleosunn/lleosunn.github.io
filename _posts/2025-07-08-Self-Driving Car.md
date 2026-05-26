@@ -2,9 +2,10 @@
 title: Self-Driving Car
 description: Quanser Self-Driving Car Student Competition at the 2025 American Control Conference.
 author: Leo Sun
-date: 2025-07-08
+date: 2025-07-01
+end_date: 2025-07-31
 slug: self-driving-car
-years: "2025"
+years: "Mar 2025 - Jul 2025"
 image:
   path: /assets/img/20250708SelfDrivingCar/selfdrivingcar.png
   alt: Self-Driving Car
