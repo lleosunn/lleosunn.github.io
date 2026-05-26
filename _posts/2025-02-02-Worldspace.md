@@ -3,6 +3,8 @@ title: Worldspace
 description: Haptic robotic arm for excavator operation.
 author: Leo Sun
 date: 2025-02-02
+slug: worldspace
+years: "2024 - 2025"
 image:
   path: /assets/img/20250202Worldspace/worldspace.png
   alt: Worldspace

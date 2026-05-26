@@ -3,6 +3,8 @@ title: Lecturizer
 description: An AI assistant that transcribes and summarizes lecture audio.
 author: Leo Sun
 date: 2024-11-10
+slug: lecturizer
+years: "2024"
 image:
   path: /assets/img/20241110Lecturizer/lecturizer.png
   alt: Lecturizer

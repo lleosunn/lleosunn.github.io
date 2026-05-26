@@ -1,0 +1,65 @@
+---
+layout: default
+---
+
+<section class="hero" aria-labelledby="intro-title">
+  <div class="hero__copy">
+    <p class="eyebrow">Portfolio</p>
+    <h1 id="intro-title">Leo Sun</h1>
+    <p class="subtitle">MIT Class of 2028</p>
+    <p class="intro">
+      I build robotics, autonomy, and AI systems, with a focus on real hardware,
+      useful interfaces, and projects that move cleanly from idea to working demo.
+    </p>
+  </div>
+</section>
+
+<section class="links-section" aria-labelledby="links-title">
+  <div class="section-heading">
+    <h2 id="links-title">Links</h2>
+  </div>
+  <div class="link-grid">
+    <a class="link-card" href="{{ '/resume/' | relative_url }}">
+      <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+      <span>Resume</span>
+    </a>
+    <a class="link-card" href="https://github.com/{{ site.github.username }}" target="_blank" rel="noopener noreferrer">
+      <i class="fa-brands fa-github" aria-hidden="true"></i>
+      <span>GitHub</span>
+    </a>
+    <a class="link-card" href="https://www.linkedin.com/in/{{ site.linkedin.username }}/" target="_blank" rel="noopener noreferrer">
+      <i class="fa-brands fa-linkedin" aria-hidden="true"></i>
+      <span>LinkedIn</span>
+    </a>
+  </div>
+</section>
+
+<section class="work-section" aria-labelledby="work-title">
+  <div class="section-heading">
+    <h2 id="work-title">Work</h2>
+  </div>
+
+  <div class="project-grid">
+    {% assign projects = site.posts | sort: "date" | reverse %}
+    {% for project in projects %}
+      <a class="project-card" href="{{ project.url | relative_url }}">
+        <div class="project-card__copy">
+          <h3>{{ project.title }}</h3>
+          <p class="project-years">
+            {% if project.years %}
+              {{ project.years }}
+            {% else %}
+              {{ project.date | date: "%Y" }}
+            {% endif %}
+          </p>
+          <p class="project-description">{{ project.description }}</p>
+        </div>
+        {% if project.image.path %}
+          <div class="project-card__media">
+            <img src="{{ project.image.path | relative_url }}" alt="{{ project.image.alt | default: project.title | escape }}" loading="lazy">
+          </div>
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+</section>

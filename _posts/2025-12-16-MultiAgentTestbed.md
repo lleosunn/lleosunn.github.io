@@ -3,6 +3,8 @@ title: Multi-Agent Testbed
 description: Multi-robot testbed for warehouse robotics.
 author: Leo Sun
 date: 2025-12-16
+slug: multi-agent-testbed
+years: "2025"
 image:
   path: /assets/img/20251216Warehouse/warehouserobotics.png
   alt: Multi-Agent Testbed
