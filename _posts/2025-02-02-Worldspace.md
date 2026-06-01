@@ -5,6 +5,7 @@ author: Leo Sun
 date: 2025-02-01
 end_date: 2025-02-28
 slug: worldspace
+display: true
 years: "Jan 2025 - Feb 2025"
 image:
   path: /assets/img/20250202Worldspace/worldspace.png

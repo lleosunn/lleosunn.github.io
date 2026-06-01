@@ -1,20 +1,39 @@
 title: Leo Sun
 tagline: MIT Class of 2028
-description: Robotics, autonomy, and AI projects by Leo Sun.
+description: Leo Sun is an MIT Class of 2028 student building robotics, autonomy, and AI systems.
 url: "https://www.leosun.org"
 baseurl: ""
 lang: en
 timezone: America/Los_Angeles
+social_preview_image: /assets/img/profile.jpeg
+google_site_verification:
 
 author:
   name: Leo Sun
   email: leosun@mit.edu
+  affiliation: Massachusetts Institute of Technology
 
 github:
   username: lleosunn
 
 linkedin:
   username: lleosunn
+
+social_links:
+  - https://github.com/lleosunn
+  - https://www.linkedin.com/in/lleosunn/
+
+seo_keywords:
+  - Leo Sun
+  - MIT
+  - Massachusetts Institute of Technology
+  - robotics
+  - autonomy
+  - artificial intelligence
+  - machine learning
+  - self-driving cars
+  - robot learning
+  - portfolio
 
 markdown: kramdown
 highlighter: rouge

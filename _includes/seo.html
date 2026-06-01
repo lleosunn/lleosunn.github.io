@@ -1,0 +1,100 @@
+{% assign seo_title = site.title %}
+{% if page.title and page.title != "Home" %}
+  {% assign seo_title = page.title | append: " | " | append: site.title %}
+{% endif %}
+{% assign seo_description = page.description | default: site.description | strip | normalize_whitespace %}
+{% assign canonical_url = page.url | replace: "index.html", "" | absolute_url %}
+{% assign seo_image = page.image.path | default: site.social_preview_image %}
+{% if seo_image %}
+  {% assign seo_image_url = seo_image | absolute_url %}
+{% endif %}
+{% assign person_id = site.url | append: "/#person" %}
+{% assign website_id = site.url | append: "/#website" %}
+
+<title>{{ seo_title | escape }}</title>
+<meta name="description" content="{{ seo_description | escape }}">
+<meta name="author" content="{{ site.author.name | escape }}">
+<meta name="keywords" content="{{ site.seo_keywords | join: ', ' | escape }}">
+{% if page.display == false or page.noindex %}
+<meta name="robots" content="noindex, nofollow">
+{% endif %}
+{% if site.google_site_verification %}
+<meta name="google-site-verification" content="{{ site.google_site_verification | escape }}">
+{% endif %}
+<link rel="canonical" href="{{ canonical_url }}">
+
+<meta property="og:site_name" content="{{ site.title | escape }}">
+<meta property="og:title" content="{{ seo_title | escape }}">
+<meta property="og:description" content="{{ seo_description | escape }}">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
+{% if seo_image_url %}
+<meta property="og:image" content="{{ seo_image_url }}">
+{% endif %}
+
+<meta name="twitter:card" content="{% if seo_image_url %}summary_large_image{% else %}summary{% endif %}">
+<meta name="twitter:title" content="{{ seo_title | escape }}">
+<meta name="twitter:description" content="{{ seo_description | escape }}">
+{% if seo_image_url %}
+<meta name="twitter:image" content="{{ seo_image_url }}">
+{% endif %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": {{ person_id | jsonify }},
+      "name": {{ site.author.name | jsonify }},
+      "url": {{ site.url | jsonify }},
+      "email": {{ site.author.email | prepend: "mailto:" | jsonify }},
+      "affiliation": {
+        "@type": "CollegeOrUniversity",
+        "name": {{ site.author.affiliation | jsonify }}
+      },
+      "sameAs": {{ site.social_links | jsonify }},
+      "knowsAbout": {{ site.seo_keywords | jsonify }}
+    },
+    {
+      "@type": "WebSite",
+      "@id": {{ website_id | jsonify }},
+      "name": {{ site.title | jsonify }},
+      "url": {{ site.url | jsonify }},
+      "description": {{ site.description | jsonify }},
+      "publisher": {
+        "@id": {{ person_id | jsonify }}
+      }
+    },
+    {% if page.layout == "post" %}
+    {
+      "@type": "CreativeWork",
+      "@id": {{ canonical_url | append: "#project" | jsonify }},
+      "name": {{ page.title | jsonify }},
+      "headline": {{ page.title | jsonify }},
+      "description": {{ seo_description | jsonify }},
+      "url": {{ canonical_url | jsonify }},
+      "dateCreated": {{ page.date | date_to_xmlschema | jsonify }},
+      "author": {
+        "@id": {{ person_id | jsonify }}
+      }{% if seo_image_url %},
+      "image": {{ seo_image_url | jsonify }}{% endif %}
+    }
+    {% else %}
+    {
+      "@type": "WebPage",
+      "@id": {{ canonical_url | append: "#webpage" | jsonify }},
+      "name": {{ seo_title | jsonify }},
+      "description": {{ seo_description | jsonify }},
+      "url": {{ canonical_url | jsonify }},
+      "isPartOf": {
+        "@id": {{ website_id | jsonify }}
+      },
+      "about": {
+        "@id": {{ person_id | jsonify }}
+      }
+    }
+    {% endif %}
+  ]
+}
+</script>
