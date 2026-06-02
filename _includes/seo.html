@@ -4,10 +4,6 @@
 {% endif %}
 {% assign seo_description = page.description | default: site.description | strip | normalize_whitespace %}
 {% assign canonical_url = page.url | replace: "index.html", "" | absolute_url %}
-{% assign seo_image = page.image.path | default: site.social_preview_image %}
-{% if seo_image %}
-  {% assign seo_image_url = seo_image | absolute_url %}
-{% endif %}
 {% assign person_id = site.url | append: "/#person" %}
 {% assign website_id = site.url | append: "/#website" %}
 
@@ -28,16 +24,10 @@
 <meta property="og:description" content="{{ seo_description | escape }}">
 <meta property="og:url" content="{{ canonical_url }}">
 <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
-{% if seo_image_url %}
-<meta property="og:image" content="{{ seo_image_url }}">
-{% endif %}
 
-<meta name="twitter:card" content="{% if seo_image_url %}summary_large_image{% else %}summary{% endif %}">
+<meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{{ seo_title | escape }}">
 <meta name="twitter:description" content="{{ seo_description | escape }}">
-{% if seo_image_url %}
-<meta name="twitter:image" content="{{ seo_image_url }}">
-{% endif %}
 
 <script type="application/ld+json">
 {
@@ -77,8 +67,7 @@
       "dateCreated": {{ page.date | date_to_xmlschema | jsonify }},
       "author": {
         "@id": {{ person_id | jsonify }}
-      }{% if seo_image_url %},
-      "image": {{ seo_image_url | jsonify }}{% endif %}
+      }
     }
     {% else %}
     {

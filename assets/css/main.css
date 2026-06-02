@@ -101,7 +101,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 22px;
   width: 100%;
   min-width: 0;
 }
@@ -160,10 +160,29 @@ img {
 }
 
 .theme-toggle {
-  width: auto;
-  padding: 0 12px;
+  width: 38px;
+  padding: 0;
   appearance: none;
   cursor: pointer;
+}
+
+.theme-toggle__icon {
+  display: block;
+  width: 1em;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.theme-toggle__icon--light {
+  display: none;
+}
+
+[data-theme="dark"] .theme-toggle__icon--dark {
+  display: none;
+}
+
+[data-theme="dark"] .theme-toggle__icon--light {
+  display: block;
 }
 
 .site-main {
@@ -428,10 +447,37 @@ h1 {
   background: var(--surface-strong);
 }
 
+.project-hero__media {
+  margin: 30px 0 0;
+}
+
 .project-hero__image img {
   width: 100%;
+  background: #030507;
+}
+
+.project-hero__media video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 520px;
+  border-radius: var(--radius);
+  background: #030507;
+  object-fit: cover;
+}
+
+.project-hero__image img {
   max-height: 520px;
   object-fit: cover;
+}
+
+.project-hero__media figcaption {
+  max-width: 720px;
+  margin: 9px auto 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .project-content {
@@ -474,6 +520,53 @@ h1 {
 
 .project-content figure {
   margin: 24px 0;
+}
+
+.project-media {
+  margin: 26px 0 34px;
+}
+
+.project-media video,
+.project-content .project-media img {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: #030507;
+}
+
+.project-media video {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.project-media__frame {
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: #030507;
+}
+
+.project-media__frame video {
+  display: block;
+}
+
+.project-media--lidar-clustering .project-media__frame video {
+  transform: scale(1.025);
+  transform-origin: center bottom;
+}
+
+.project-media--planning-demo .project-media__frame video {
+  transform: scale(1.07);
+  transform-origin: center center;
+}
+
+.project-media figcaption {
+  max-width: 720px;
+  margin: 9px auto 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .project-content iframe {
@@ -539,7 +632,7 @@ ol {
   .nav-links {
     width: 100%;
     justify-content: center;
-    gap: 10px;
+    gap: 14px;
   }
 
   .nav-link,
@@ -551,6 +644,8 @@ ol {
 
   .theme-toggle {
     flex: 0 0 auto;
+    width: 34px;
+    padding: 0;
   }
 
   .hero,
@@ -588,5 +683,9 @@ ol {
   .nav-link,
   .theme-toggle {
     padding: 0 4px;
+  }
+
+  .theme-toggle {
+    padding: 0;
   }
 }
