@@ -6,13 +6,14 @@ date: 2026-05-10
 end_date: 2026-05-31
 slug: neural-combinatorial-optimization
 display: true
+tile_order: 3
 years: "Jan 2026 - May 2026"
 image:
   path: /assets/img/20260510NCO/policies.png
   alt: Policy types for neural combinatorial optimization
 preview_image:
-  path: /assets/img/20260510NCO/rl-perturbation-results.png
-  alt: Neural combinatorial optimization training results
+  path: /assets/img/20260510NCO/cvrp-fast.gif
+  alt: Animated CVRP tour optimization
 ---
 
 ## Overview

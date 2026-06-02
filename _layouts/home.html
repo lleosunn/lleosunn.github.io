@@ -11,7 +11,7 @@ layout: default
 
 <section class="work-section" aria-label="Projects">
   <div class="project-gallery">
-    {% assign projects = site.posts | sort: "end_date" | reverse %}
+    {% assign projects = site.posts | sort: "tile_order" %}
     {% for project in projects %}
       {% unless project.display == false %}
         {% assign preview = project.preview_image.path | default: project.image.path %}

@@ -6,6 +6,7 @@ date: 2026-05-26
 end_date: 9999-12-31
 slug: mit-motorsports-driverless
 display: true
+tile_order: 1
 years: "Jul 2025 - Present"
 image:
   path: /assets/img/20260526MITMotorsportsDriverless/fsae-rover-testbed.jpg

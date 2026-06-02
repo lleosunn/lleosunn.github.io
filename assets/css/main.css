@@ -4,12 +4,12 @@
   --surface: #ffffff;
   --surface-strong: #eef2f7;
   --text: #0b0e14;
-  --muted: #5b6472;
+  --muted: #60646c;
   --line: #d5dce6;
   --line-strong: #aeb8c6;
-  --accent: #2563eb;
-  --accent-strong: #1d4ed8;
-  --accent-soft: rgba(37, 99, 235, 0.12);
+  --accent: #6b7280;
+  --accent-strong: #4b5563;
+  --accent-soft: rgba(107, 114, 128, 0.14);
   --shadow: 0 20px 55px rgba(15, 23, 42, 0.12);
   --radius: 6px;
   --max: 1180px;
@@ -21,12 +21,12 @@
   --surface: #0f131a;
   --surface-strong: #171e28;
   --text: #f4f7fb;
-  --muted: #a4adba;
+  --muted: #b8b8b8;
   --line: #263142;
   --line-strong: #435064;
-  --accent: #60a5fa;
-  --accent-strong: #93c5fd;
-  --accent-soft: rgba(96, 165, 250, 0.14);
+  --accent: #b8b8b8;
+  --accent-strong: #d1d5db;
+  --accent-soft: rgba(184, 184, 184, 0.16);
   --shadow: 0 20px 55px rgba(0, 0, 0, 0.36);
 }
 
@@ -281,15 +281,28 @@ h1 {
   object-position: 40% center;
 }
 
+.project-tile--multi-agent-testbed .project-tile__image {
+  object-position: 36% center;
+}
+
+.project-tile--rss-autonomous-car .project-tile__image {
+  transform: scale(1.28);
+}
+
 .project-tile:hover .project-tile__image,
 .project-tile:focus-visible .project-tile__image {
   transform: scale(1.04);
   filter: none;
 }
 
+.project-tile--rss-autonomous-car:hover .project-tile__image,
+.project-tile--rss-autonomous-car:focus-visible .project-tile__image {
+  transform: scale(1.32);
+}
+
 .project-tile__placeholder {
   background:
-    linear-gradient(135deg, rgba(37, 99, 235, 0.32), transparent 54%),
+    linear-gradient(135deg, rgba(156, 163, 175, 0.32), transparent 54%),
     linear-gradient(45deg, transparent 0 47%, rgba(255, 255, 255, 0.26) 47% 53%, transparent 53%),
     #111827;
 }
@@ -300,7 +313,7 @@ h1 {
   height: 13px;
   border: 2px solid rgba(255, 255, 255, 0.75);
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.8);
+  background: rgba(156, 163, 175, 0.8);
 }
 
 .project-tile__placeholder span:nth-child(1) {

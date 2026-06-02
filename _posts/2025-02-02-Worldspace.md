@@ -6,6 +6,7 @@ date: 2025-02-01
 end_date: 2025-02-28
 slug: worldspace
 display: true
+tile_order: 7
 years: "Jan 2025 - Feb 2025"
 image:
   path: /assets/img/20250202Worldspace/worldspace.png

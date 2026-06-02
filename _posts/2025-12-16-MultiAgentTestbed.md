@@ -6,6 +6,7 @@ date: 2026-05-20
 end_date: 2026-05-31
 slug: multi-agent-testbed
 display: true
+tile_order: 4
 years: "May 2025 - May 2026"
 image:
   path: /assets/img/20251216Warehouse/warehouserobotics.png
