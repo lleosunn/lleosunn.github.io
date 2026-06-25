@@ -2,15 +2,13 @@
 layout: default
 ---
 
-<section class="hero" aria-label="Introduction">
-  <div class="hero__copy">
-    <h1>{{ site.title }}</h1>
-    <p class="intro">{{ site.tagline }}</p>
-  </div>
-</section>
-
 <section class="work-section" aria-label="Projects">
   <div class="project-gallery">
+    <div class="intro-tile" aria-label="Introduction">
+      <p class="intro-tile__eyebrow">Portfolio</p>
+      <h1>{{ site.title }}</h1>
+      <p>{{ site.tagline }}</p>
+    </div>
     {% assign projects = site.posts | sort: "tile_order" %}
     {% for project in projects %}
       {% unless project.display == false %}
@@ -19,11 +17,7 @@ layout: default
           {% if preview %}
             <img class="project-tile__image" src="{{ preview | relative_url }}" alt="{{ project.preview_image.alt | default: project.image.alt | default: project.title | escape }}" loading="lazy">
           {% else %}
-            <div class="project-tile__placeholder" aria-hidden="true">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
+            <div class="project-tile__placeholder" aria-hidden="true"></div>
           {% endif %}
           <div class="project-tile__overlay">
             <h3>{{ project.title }}</h3>
