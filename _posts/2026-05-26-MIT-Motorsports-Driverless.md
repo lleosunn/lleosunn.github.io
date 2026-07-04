@@ -1,6 +1,6 @@
 ---
-title: Formula SAE Driverless
-description: Software stack for MIT Motorsports' autonomous racecar.
+title: MIT Motorsports
+description: Software stack for Formula Student Driverless.
 author: Leo Sun
 date: 2026-05-26
 end_date: 9999-12-31
@@ -11,6 +11,9 @@ years: "Jul 2025 - Present"
 image:
   path: /assets/img/20260526MITMotorsportsDriverless/fsae-rover-testbed.jpg
   alt: MIT Motorsports FSAE rover testbed
+preview_image:
+  path: /assets/img/20260526MITMotorsportsDriverless/fsae-driverless-racecar.jpg
+  alt: MIT Motorsports Formula SAE driverless car driving through cones
 hero_video:
   path: /assets/video/20260526MITMotorsportsDriverless/rover-cone-demo.mp4
   type: video/mp4
