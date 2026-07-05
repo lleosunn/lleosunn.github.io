@@ -2,6 +2,8 @@
 layout: default
 ---
 
+{% assign asset_version = site.time | date: '%s' %}
+
 <section class="work-section" aria-label="Projects">
   <div class="project-gallery">
     <div class="intro-tile" aria-label="Introduction">
@@ -15,7 +17,7 @@ layout: default
         {% assign preview = project.preview_image.path | default: project.image.path %}
         <a class="project-tile project-tile--{{ project.slug }}{% unless preview %} project-tile--text-only{% endunless %}" href="{{ project.url | relative_url }}">
           {% if preview %}
-            <img class="project-tile__image" src="{{ preview | relative_url }}" alt="{{ project.preview_image.alt | default: project.image.alt | default: project.title | escape }}" loading="lazy">
+            <img class="project-tile__image" src="{{ preview | relative_url }}?v={{ asset_version }}" alt="{{ project.preview_image.alt | default: project.image.alt | default: project.title | escape }}" loading="lazy">
           {% else %}
             <div class="project-tile__placeholder" aria-hidden="true"></div>
           {% endif %}

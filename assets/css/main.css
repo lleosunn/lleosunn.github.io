@@ -1,3 +1,7 @@
+---
+layout: null
+---
+
 :root {
   color-scheme: light;
   --bg: #f6f7f9;
@@ -265,7 +269,7 @@ h1 {
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.2) 46%, rgba(0, 0, 0, 0.72) 100%),
     linear-gradient(90deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.04) 58%),
-    url("/assets/img/leo-sun-tile-cover.jpg");
+    url("{{ '/assets/img/leo-sun-tile-cover.jpg' | relative_url }}?v={{ site.time | date: '%s' }}");
   background-position: var(--intro-tile-x) var(--intro-tile-y);
   background-size: var(--intro-tile-size);
   box-shadow:
