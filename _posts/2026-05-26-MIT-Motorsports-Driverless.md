@@ -1,6 +1,6 @@
 ---
 title: MIT Motorsports
-description: Software stack for Formula Student Driverless.
+description: Driverless software and algorithms.
 author: Leo Sun
 date: 2026-05-26
 end_date: 9999-12-31
@@ -30,7 +30,9 @@ The autonomy problem is divided into four main subsystems: perception, state est
 
 ---
 
-## Perception
+## The Stack
+
+### Perception
 Perception currently uses a LiDAR-only cone detection pipeline. Raw Ouster point clouds are filtered to a region of interest, ground points are removed, and the remaining points are clustered in the XY plane using Euclidean/DBSCAN-style clustering. Each cluster is reduced to a cone centroid.
 
 <figure class="project-media project-media--lidar-clustering">
@@ -49,16 +51,12 @@ For cone colors, the LiDAR-only classifier builds blue and yellow cone chains us
   <figcaption>YOLO cone detections used as a vision path for validating blue and yellow cone colors.</figcaption>
 </figure>
 
----
-
-## State Estimation
+### State Estimation
 State estimation uses the `robot_localization` EKF package to fuse GPS, ground-speed odometry, and IMU data into a filtered vehicle state. GPS is converted through `navsat_transform_node` into `/odometry/gps`, the ground-speed sensor provides forward velocity, and the VectorNav IMU contributes yaw-rate and angular motion.
 
 The fused estimate publishes a filtered pose and velocity stream, such as `/odometry/filtered`, along with the TF frames needed by planning and control.
 
----
-
-## Planning
+### Planning
 Planning consumes the perceived colored cone centroids, transforms them into the planning frame, and filters to nearby cones that matter for the current horizon. If only one side of the track is visible, the planner can create virtual cones to maintain a usable corridor.
 
 From there, it uses Delaunay triangulation to connect cones, takes midpoints between opposite-color cone edges, builds a graph of candidate centerline points, and runs Dijkstra/search to choose the forward path. The selected centerline is smoothed with a spline and published as a `/path`.
@@ -72,9 +70,7 @@ From there, it uses Delaunay triangulation to connect cones, takes midpoints bet
   <figcaption>Planning demo showing cone inputs being converted into a forward centerline.</figcaption>
 </figure>
 
----
-
-## Control
+### Control
 Control follows the planned path using the current state estimate and odometry. The stack supports path-tracking approaches such as Pure Pursuit and Stanley: Pure Pursuit selects a lookahead point and computes steering curvature, while Stanley uses cross-track and heading error from EKF odometry.
 
 The controller publishes desired velocity and steering commands, which pass through a command-mux safety gate before reaching the ODrive motor and steering hardware.

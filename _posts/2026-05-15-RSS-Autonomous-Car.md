@@ -11,6 +11,11 @@ years: "Feb 2026 - May 2026"
 image:
   path: /assets/img/20260515RSSAutonomousCar/rss-autonomous-car.jpg
   alt: RSS autonomous car test platform
+hero_video:
+  path: /assets/video/20260515RSSAutonomousCar/lane-following-demo.mp4
+  poster: /assets/video/20260515RSSAutonomousCar/lane-following-demo-poster.jpg
+  type: video/mp4
+  caption: Lane-following run from the RSS final challenge.
 preview_image:
   path: /assets/img/20260515RSSAutonomousCar/rss-autonomous-car-tile.jpg
   alt: RSS autonomous car test platform on the floor
@@ -34,6 +39,9 @@ I also added corner handling using the forward LiDAR region. When the car detect
 
 The final wall follower ran on the physical RACECAR and was tested on straight walls, angled approaches, and corner cases at multiple speeds. In the team's trials, the system maintained roughly a 0.5 m wall offset and showed low steady-state error across the tested speed range.
 
+<!-- VIDEO: RSS Lab 03 wall following -->
+{% include embed/youtube.html id='DJ-H2TL0qZU' title='RSS Lab 03 wall-following demo' %}
+
 ---
 
 ## Lab 04: Visual Servoing
@@ -43,7 +51,8 @@ The cone-parking pipeline detected the cone in image space, used a homography tr
 
 For line following, we tuned HSV thresholds and camera regions of interest to focus on useful lane pixels under difficult lighting. The car then followed the detected line using the same general visual-servoing idea: estimate a target point from camera data, transform it into a driving command, and tune the controller until the behavior was stable on hardware.
 
-This lab was a useful lesson in choosing robust simple methods. More sophisticated detectors were available, but the fastest path to reliable hardware behavior came from careful color segmentation, homography calibration, and controller tuning.
+<!-- VIDEO: RSS Lab 04 visual servoing -->
+{% include embed/youtube.html id='0eR7Fgw2NP4' title='RSS Lab 04 visual-servoing demo' %}
 
 ---
 
@@ -52,7 +61,10 @@ In the localization lab, we implemented Monte Carlo Localization for the RACECAR
 
 My main work was on the particle-filter update loop. On each odometry callback, the system computed a body-frame control increment from linear velocity, lateral velocity, yaw rate, and elapsed time, then propagated each particle through the motion model. On each LiDAR callback, the scan was downsampled to 100 beams, ray-cast expected ranges were compared against observed ranges, and particle weights were updated with a geometric-mean likelihood to avoid collapse from a few bad beams.
 
-I also worked on the real-world evaluation. We tested localization on the physical RACECAR with straight-line and closed-loop circular trials, comparing the particle filter's pose estimate against measured ground truth in the Stata basement. Across those tests, the particle filter achieved about 9 cm RMSE, with the biggest failures coming from cluttered areas where the real environment did not match the map well.
+I also worked on the real-world implementation and evaluation. We tested localization on the physical RACECAR, comparing the particle filter's pose estimate against measured ground truth in the Stata basement. Across those tests, the particle filter achieved about 9 cm RMSE, with the biggest failures coming from cluttered areas where the real environment did not match the map well.
+
+<!-- VIDEO: RSS Lab 05 localization -->
+{% include embed/youtube.html id='Z8_q6YccryU' title='RSS Lab 05 localization demo' %}
 
 ---
 
@@ -65,6 +77,9 @@ We compared RRT-Connect against A*. A* produced shorter, resolution-optimal path
 
 The final Lab 6 stack used Monte Carlo Localization for pose estimates, RRT-Connect for feasible path generation, and pure pursuit for trajectory tracking. In simulation, the system reached a mean cross-track error of about 0.0188 m; on the physical car, tracking error was about 0.03 m on straights and 0.05 m through corners.
 
+<!-- VIDEO: RSS Lab 06 path planning -->
+{% include embed/youtube.html id='7B7-hvqkuhU' title='RSS Lab 06 path-planning demo' %}
+
 ---
 
 ## Final Challenge
@@ -74,4 +89,12 @@ For the lane-following race, the stack used the ZED camera to detect lane bounda
 
 For the structured driving task, we integrated LiDAR, camera perception, odometry, localization, RRT-Connect planning, pure pursuit, object detection, and a state machine. The state machine coordinated forward planning, path following, traffic-light stopping, parking-meter behavior, reversing, return planning, and return path following. YOLO and color detection handled traffic lights and parking meters, while homography estimated object distances for stopping and parking behavior.
 
+<!-- VIDEO: RSS final challenge -->
+{% include embed/youtube.html id='Pr2ZdtEVybE' title='RSS final challenge demo' %}
+
 The biggest final-challenge lesson was that hardware noise and integration details matter as much as individual algorithms. Components that worked cleanly in isolation still needed careful tuning once they ran together with real sensors, mechanical variation, compute load, and ROS timing.
+
+---
+
+## My Thoughts
+This has probably been my favorite class at MIT so far. In my opinion it is the best way to learn ROS 2 as well as foundational/classicial robotics concepts. This class is also a big time sink. I think I spent at least 20 hours in the Stata basement just working and debugging the car. Kinda upset that the class is only 12 units but I think it was still worth it in the end. I had a great learning experience and am also super grateful for my team.
