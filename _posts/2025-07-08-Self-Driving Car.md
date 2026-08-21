@@ -11,6 +11,9 @@ years: "Mar 2025 - Jul 2025"
 image:
   path: /assets/img/20250708SelfDrivingCar/selfdrivingcar.png
   alt: Self-Driving Car
+preview_image:
+  path: /assets/img/20250708SelfDrivingCar/self-driving-car-tile.jpg
+  alt: Quanser self-driving car platform with onboard cameras and sensors
 ---
 
 ## Overview
