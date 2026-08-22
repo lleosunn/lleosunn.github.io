@@ -6,45 +6,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% include seo.html %}
     <link rel="icon" href="{{ '/assets/img/favicons/favicon.ico' | relative_url }}">
-    <link rel="stylesheet" href="{{ '/assets/lib/fontawesome-free/css/all.min.css' | relative_url }}">
+    <link rel="preload" href="{{ '/assets/fonts/inter-400-latin.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ '/assets/fonts/inter-600-latin.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}?v={{ asset_version }}">
+    {%- comment -%}
+      Both of these have to run before the first paint, which is why they are
+      inline: a theme resolved later flashes the wrong one, and a hero revealed
+      later flashes at the destination its own flyer is still travelling to.
+    {%- endcomment -%}
     <script>
       (function () {
+        var root = document.documentElement;
+
         var saved = localStorage.getItem("theme");
         var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        document.documentElement.dataset.theme = saved || (prefersDark ? "dark" : "light");
+        root.dataset.theme = saved || (prefersDark ? "dark" : "light");
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        root.classList.add("is-entering");
+        try {
+          if (sessionStorage.getItem("hero-flight")) {
+            root.classList.add("is-hero-in", "is-flat");
+          }
+        } catch (e) {
+          /* Private mode. The entry still plays; only the flight is skipped. */
+        }
       })();
     </script>
   </head>
-  <body>
-    <header class="site-bar">
-      <nav class="site-nav" aria-label="Primary navigation">
-        <div class="nav-links">
-          <a class="nav-link" href="{{ '/' | relative_url }}">
-            <span>Home</span>
-          </a>
-          <a class="nav-link" href="https://www.linkedin.com/in/{{ site.linkedin.username }}/" target="_blank" rel="noopener noreferrer">
-            <span>LinkedIn</span>
-          </a>
-          <a class="nav-link" href="https://github.com/{{ site.github.username }}" target="_blank" rel="noopener noreferrer">
-            <span>GitHub</span>
-          </a>
-          <a class="nav-link" href="{{ '/resume/' | relative_url }}">
-            <span>Resume</span>
-          </a>
-          <button class="theme-toggle" type="button" aria-label="Switch color theme" aria-pressed="false">
-            <i class="fa-solid fa-moon theme-toggle__icon theme-toggle__icon--dark" aria-hidden="true"></i>
-            <i class="fa-solid fa-sun theme-toggle__icon theme-toggle__icon--light" aria-hidden="true"></i>
-            <span class="sr-only">Switch color theme</span>
-          </button>
+
+  {%- comment -%}
+    The left pane is one slot fed by three sources: the site on the home page,
+    the page's own front matter everywhere else.
+  {%- endcomment -%}
+  {%- assign is_home = false -%}
+  {%- if page.layout == 'home' -%}{%- assign is_home = true -%}{%- endif -%}
+  {%- if is_home -%}
+    {%- assign pane_title = site.title -%}
+    {%- assign pane_sub = site.tagline -%}
+    {%- assign pane_meta = nil -%}
+  {%- else -%}
+    {%- assign pane_title = page.title -%}
+    {%- assign pane_sub = page.description -%}
+    {%- assign pane_meta = page.years -%}
+  {%- endif -%}
+
+  <body data-page="{% if is_home %}home{% else %}inner{% endif %}">
+    <div class="shell">
+      <aside class="pane-left">
+        <div class="identity">
+          <h1 class="identity__title">{{ pane_title }}</h1>
+          {% if pane_sub %}<p class="identity__sub">{{ pane_sub }}</p>{% endif %}
+          {% if pane_meta %}<p class="identity__meta">{{ pane_meta }}</p>{% endif %}
         </div>
-      </nav>
-    </header>
 
-    <main class="site-main">
-      {{ content }}
-    </main>
+        {%- comment -%}
+          Sibling of .identity, not a child: on mobile .pane-left becomes
+          display:contents so these two land at opposite ends of the grid.
+        {%- endcomment -%}
+        <nav class="icon-row" aria-label="Primary">
+          <a class="icon-btn{% if is_home %} is-current{% endif %}" href="{{ '/' | relative_url }}" aria-label="Home"{% if is_home %} aria-current="page"{% endif %}>
+            {% include icons.html name="home" %}
+          </a>
+          <a class="icon-btn" href="https://www.linkedin.com/in/{{ site.linkedin.username }}/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            {% include icons.html name="linkedin" %}
+          </a>
+          <a class="icon-btn" href="https://github.com/{{ site.github.username }}" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            {% include icons.html name="github" %}
+          </a>
+          <a class="icon-btn" href="{{ '/resume/' | relative_url }}" aria-label="Resume">
+            {% include icons.html name="resume" %}
+          </a>
+          <button class="icon-btn theme-toggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+            <span class="theme-toggle__icon theme-toggle__icon--dark">{% include icons.html name="moon" %}</span>
+            <span class="theme-toggle__icon theme-toggle__icon--light">{% include icons.html name="sun" %}</span>
+          </button>
+        </nav>
+      </aside>
 
+      <div class="pane-right" id="scroller">
+        {{ content }}
+      </div>
+
+      {%- if is_home -%}
+        {%- assign dot_projects = site.posts | sort: "tile_order" -%}
+        <nav class="dots" aria-label="Project navigation">
+          {%- for project in dot_projects -%}
+            {%- unless project.display == false -%}
+              <button class="dot" type="button" aria-label="{{ project.title | escape }}" aria-current="false"></button>
+            {%- endunless -%}
+          {%- endfor -%}
+        </nav>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%}
+      Order is load-bearing: scroll.js hands nav.js the Lenis instance every
+      programmatic scroll has to go through, and nav.js hands transitions.js the
+      card a returning flight lands on.
+    {%- endcomment -%}
     <script src="{{ '/assets/js/theme.js' | relative_url }}?v={{ asset_version }}"></script>
+    <script src="{{ '/assets/js/lenis.min.js' | relative_url }}?v={{ asset_version }}"></script>
+    <script src="{{ '/assets/js/scroll.js' | relative_url }}?v={{ asset_version }}"></script>
+    <script src="{{ '/assets/js/nav.js' | relative_url }}?v={{ asset_version }}"></script>
+    <script src="{{ '/assets/js/transitions.js' | relative_url }}?v={{ asset_version }}"></script>
   </body>
 </html>

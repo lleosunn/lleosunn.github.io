@@ -14,6 +14,7 @@ image:
 preview_image:
   path: /assets/img/20260526MITMotorsportsDriverless/fsae-driverless-racecar.jpg
   alt: MIT Motorsports Formula SAE driverless car driving through cones
+  position: "40% center"
 hero_video:
   path: /assets/video/20260526MITMotorsportsDriverless/rover-cone-demo.mp4
   type: video/mp4

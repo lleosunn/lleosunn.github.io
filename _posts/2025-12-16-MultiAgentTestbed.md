@@ -11,6 +11,7 @@ years: "May 2025 - May 2026"
 image:
   path: /assets/img/20251216Warehouse/warehouserobotics.png
   alt: Multi-Agent Testbed
+  position: "36% center"
 ---
 
 ## Overview

@@ -19,6 +19,7 @@ hero_video:
 preview_image:
   path: /assets/img/20260515RSSAutonomousCar/rss-autonomous-car-tile.jpg
   alt: RSS autonomous car test platform on the floor
+  position: "62% 50%"
 ---
 
 ## Overview

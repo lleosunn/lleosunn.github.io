@@ -1,84 +1,164 @@
----
-layout: null
----
+/* ==========================================================================
+   Leo Sun — split-pane portfolio
+   Fixed identity pane on the left, independently scrolling content on the
+   right. Grayscale in both themes. Inter at two weights: 400 for everything
+   that is read, 600 for titles. Hierarchy still comes mostly from size, space
+   and gray — the semibold is a nudge, not the mechanism.
+   ========================================================================== */
+
+/* --- Font ---------------------------------------------------------------- */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/inter-400-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/inter-400-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/inter-600-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/inter-600-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* --- Tokens -------------------------------------------------------------- */
 
 :root {
   color-scheme: light;
-  --bg: #f6f7f9;
+  --bg: #f2f2f2;
+  /* --surface is chrome (icon tiles, code blocks); --card-bg is a tile's own
+     sheet. They have to differ: a deck of white cards swallows white icon
+     tiles floating over it on mobile. */
   --surface: #ffffff;
-  --surface-strong: #eef2f7;
-  --text: #0b0e14;
-  --muted: #60646c;
-  --line: #d5dce6;
-  --line-strong: #aeb8c6;
-  --accent: #6b7280;
-  --accent-strong: #4b5563;
-  --accent-soft: rgba(107, 114, 128, 0.14);
-  --nav-hover: rgba(15, 23, 42, 0.09);
-  --nav-hover-border: rgba(15, 23, 42, 0.16);
-  --shadow: 0 20px 55px rgba(15, 23, 42, 0.12);
-  --radius: 6px;
-  --tile-radius: 28px;
-  --max: 1180px;
+  --card-bg: #e8e8e8;
+  --text: #0a0a0a;
+  --muted: #9f9f9f;
+  --line: #e2e2e2;
+
+  --pane: clamp(320px, 42vw, 780px);
+  /* The reference indents its left column ~17.8vw. Pulled in to 15vw because
+     its tagline is 11 characters and ours is 17: at the reference indent and
+     type size, "MIT Class of 2028" clears its column by 4px at 1440 and wraps
+     at every other width. */
+  --indent: clamp(24px, 15vw, 320px);
+  --gutter: clamp(20px, 2.6vw, 48px);
+  --radius: 8px;
+
+  /* Card geometry. --card-h is resolved against .tiles (a size container),
+     so 50cqh means half the scrolling pane, not half the screen. */
+  --card-h: clamp(220px, 44cqh, 520px);
+  --weight-title: 600;
+  --card-radius: 22px;
+  --card-shadow: 0 20px 55px rgba(0, 0, 0, 0.11);
+
+  /* Page transitions and the flight between them run on one curve: fast off
+     the mark, a long settle. Same family as the scroll easing in scroll.js, so
+     a click and a scroll feel like the same hand. */
+  --ease-page: cubic-bezier(0.075, 0.82, 0.165, 1);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #07090d;
-  --surface: #0f131a;
-  --surface-strong: #171e28;
-  --text: #f4f7fb;
-  --muted: #b8b8b8;
-  --line: #263142;
-  --line-strong: #435064;
-  --accent: #b8b8b8;
-  --accent-strong: #d1d5db;
-  --accent-soft: rgba(184, 184, 184, 0.16);
-  --nav-hover: rgba(255, 255, 255, 0.16);
-  --nav-hover-border: rgba(255, 255, 255, 0.22);
-  --shadow: 0 20px 55px rgba(0, 0, 0, 0.36);
+  --bg: #0a0a0a;
+  --surface: #242424;
+  --card-bg: #171717;
+  --text: #ffffff;
+  --muted: #9f9f9f;
+  --line: #232323;
+  /* A cast shadow is invisible on near-black; the card reads by tone instead. */
+  --card-shadow: none;
 }
 
-* {
+/* --- Base ---------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-  letter-spacing: 0;
 }
 
 html {
-  background: var(--bg);
-  scroll-behavior: smooth;
+  height: 100%;
+  /* The pane below is smoothed by Lenis, which drives scrollTop itself. This
+     stays `auto` so the browser's own smoothing never runs alongside it. */
+  scroll-behavior: auto;
 }
 
 body {
-  min-height: 100vh;
+  height: 100dvh;
   margin: 0;
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+    Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
   line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
+h1,
+h2,
+h3,
+h4 {
+  font-weight: var(--weight-title);
 }
 
-a {
+img,
+video {
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
   color: inherit;
 }
 
-img {
-  display: block;
-  max-width: 100%;
+:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+  border-radius: 3px;
 }
 
 .sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
+  padding: 0;
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
@@ -86,121 +166,126 @@ img {
   border: 0;
 }
 
-.site-bar {
-  position: sticky;
-  top: 12px;
-  z-index: 20;
-  width: 100%;
-  background: transparent;
-  pointer-events: none;
+/* --- Shell --------------------------------------------------------------- */
+
+.shell {
+  display: grid;
+  /* minmax(0,…) so the scrolling pane can shrink instead of forcing overflow */
+  grid-template-columns: var(--pane) minmax(0, 1fr);
+  height: 100dvh;
 }
 
-.site-nav {
+.pane-left {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  width: min(var(--max), calc(100% - 36px));
-  min-height: 58px;
-  margin: 0 auto;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  width: auto;
-  max-width: 100%;
+  padding: var(--gutter) var(--gutter) var(--gutter) var(--indent);
   min-width: 0;
-  padding: 7px;
-  border: 1px solid color-mix(in srgb, var(--surface) 52%, transparent);
-  border-radius: 999px;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--surface) 78%, transparent), color-mix(in srgb, var(--surface-strong) 45%, transparent));
-  box-shadow:
-    0 18px 42px rgba(15, 23, 42, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.58),
-    inset 0 -1px 0 color-mix(in srgb, var(--line-strong) 32%, transparent);
-  backdrop-filter: blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
-  pointer-events: auto;
 }
 
-.inline-action {
+.pane-right {
+  position: relative;
+  /* nav.js gives cards z-indexes in the hundreds so the deck stacks correctly.
+     Isolating keeps those out of the page's stacking context, where they would
+     otherwise paint over the dots and the floating mobile chrome. */
+  isolation: isolate;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: var(--gutter) calc(var(--gutter) + 22px) calc(var(--gutter) * 2) 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.pane-right::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- Identity ------------------------------------------------------------ */
+
+.identity {
+  min-width: 0;
+}
+
+.identity__title {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.55vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.021em;
+  text-wrap: balance;
+}
+
+.identity__sub {
+  max-width: 34ch;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.identity__meta {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+}
+
+/* On the home page the tagline is a second title line, matched in size and
+   separated from the name by colour alone. Elsewhere the same slot holds a
+   project description — a full sentence, which would be unreadable at that
+   size — so the large treatment is scoped to home. */
+[data-page="home"] .identity__sub {
+  max-width: none;
+  margin-top: 0;
+  font-size: clamp(1.6rem, 2.55vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.021em;
+}
+
+/* --- Icon row ------------------------------------------------------------ */
+
+.icon-row {
+  display: flex;
+  gap: clamp(5px, 0.4vw, 8px);
+  margin: clamp(26px, 3.9vw, 56px) 0 0;
+}
+
+.icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 38px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  color: var(--text);
-  text-decoration: none;
-}
-
-.theme-toggle,
-.nav-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 34px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text);
-  text-decoration: none;
-  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
-}
-
-.nav-link,
-.theme-toggle,
-.inline-action {
-  gap: 8px;
-  padding: 0 14px;
-  font-size: 0.84rem;
-  font-weight: 750;
-  line-height: 1;
-}
-
-.inline-action i {
-  color: var(--accent);
-}
-
-.nav-link:hover,
-.theme-toggle:hover,
-.nav-link:focus-visible,
-.theme-toggle:focus-visible {
-  color: var(--text);
-  border-color: var(--nav-hover-border);
-  background: var(--nav-hover);
-  box-shadow:
-    0 5px 14px rgba(15, 23, 42, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.42);
-  outline: none;
-  transform: translateY(-1px);
-}
-
-.inline-action:hover {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.theme-toggle {
-  width: 34px;
+  width: clamp(40px, 3.9vw, 56px);
+  height: clamp(40px, 3.9vw, 56px);
   padding: 0;
-  appearance: none;
+  border: 0;
+  border-radius: 23%;
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
+  transition: color 150ms ease, box-shadow 150ms ease;
+}
+
+.icon-btn svg {
+  display: block;
+  width: clamp(17px, 1.5vw, 21px);
+  height: clamp(17px, 1.5vw, 21px);
+}
+
+.icon-btn:hover,
+.icon-btn:focus-visible {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.icon-btn.is-current {
+  color: var(--text);
 }
 
 .theme-toggle__icon {
-  display: block;
-  width: 1em;
-  font-size: 1rem;
-  line-height: 1;
+  display: none;
 }
 
-.theme-toggle__icon--light {
-  display: none;
+.theme-toggle__icon--dark {
+  display: block;
 }
 
 [data-theme="dark"] .theme-toggle__icon--dark {
@@ -211,495 +296,773 @@ img {
   display: block;
 }
 
-.site-main {
-  width: 100%;
-  padding: 28px 0 88px;
+/* --- Project tiles (home) ------------------------------------------------ */
+
+/* Each .tile is one slot exactly as tall as the scrollport, so a card sits at
+   centre whenever the scroller is a whole number of slots along, with no
+   scroll-padding gymnastics. Nothing snaps: the scroll runs free and the wheel
+   turns continuously with it, resting between cards as readily as on one. The
+   card inside a slot is what moves: nav.js scales it down and pulls it toward
+   centre as it leaves, by less each time, so every neighbour clears the one in
+   front by a thinner sliver and the run of them reads as a wheel turning away.
+   Transforms stay off the slot itself so the layout boxes nav.js measures
+   never move. */
+
+[data-page="home"] .pane-right {
+  /* Vertical padding would desync slot height from scrollport height, which
+     the centring maths in nav.js depends on. */
+  padding: 0 calc(var(--gutter) + 22px);
 }
 
-.work-section,
-.project-page,
-.simple-page {
-  width: min(var(--max), calc(100% - 36px));
-  margin: 0 auto;
+.tiles {
+  height: 100%;
+  /* Sizes the card against the pane rather than the viewport: on mobile the
+     pane is shorter than the screen, and viewport units there would grow the
+     card until the slivers vanished. */
+  container-type: size;
 }
 
-.eyebrow {
-  margin: 0 0 14px;
-  color: var(--accent);
-  font-size: 0.82rem;
-  font-weight: 850;
-  text-transform: uppercase;
-}
-
-h1,
-h2,
-h3,
-p {
-  overflow-wrap: anywhere;
-}
-
-h1 {
-  margin: 0;
-  font-size: clamp(3.6rem, 10vw, 6.6rem);
-  font-weight: 900;
-  line-height: 0.92;
-}
-
-.work-section {
-  width: min(100% - 64px, 1960px);
-}
-
-.project-gallery {
+.tile {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  place-items: center;
+  height: 100%;
+  /* nav.js sets z-index per card so nearer cards of the deck paint on top;
+     without position the index would be ignored. */
+  position: relative;
 }
 
-.intro-tile {
-  --intro-tile-x: 50%;
-  --intro-tile-y: 44%;
-  --intro-tile-size: 100% auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
-  border-radius: var(--tile-radius);
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.2) 46%, rgba(0, 0, 0, 0.72) 100%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.04) 58%),
-    url("{{ '/assets/img/leo-sun-tile-cover.jpg' | relative_url }}?v={{ site.time | date: '%s' }}");
-  background-position: var(--intro-tile-x) var(--intro-tile-y);
-  background-size: var(--intro-tile-size);
-  box-shadow:
-    0 20px 54px rgba(15, 23, 42, 0.11),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  min-width: 0;
-  padding: clamp(24px, 3vw, 36px);
-}
-
-.intro-tile__eyebrow {
-  margin: 0 0 12px;
-  color: rgba(255, 255, 255, 0.76);
-  font-size: 0.78rem;
-  font-weight: 850;
-  text-transform: uppercase;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
-}
-
-.intro-tile h1 {
-  color: #ffffff;
-  font-size: clamp(2.8rem, 6vw, 5.8rem);
-  line-height: 0.9;
-  text-shadow: 0 3px 20px rgba(0, 0, 0, 0.5);
-}
-
-.intro-tile p:not(.intro-tile__eyebrow) {
-  max-width: 18rem;
-  margin: 18px 0 0;
-  color: rgba(255, 255, 255, 0.84);
-  font-size: clamp(1rem, 1.55vw, 1.2rem);
-  line-height: 1.28;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.48);
-}
-
-.project-tile {
+.tile__card {
   position: relative;
   display: block;
-  aspect-ratio: 1 / 1;
+  width: min(calc(var(--card-h) * 0.96), 100%);
+  height: min(var(--card-h), 100%);
   overflow: hidden;
-  border-radius: var(--tile-radius);
-  background: #030507;
-  color: #ffffff;
+  border-radius: var(--card-radius);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  color: inherit;
   text-decoration: none;
-  isolation: isolate;
-  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.11);
-  transform: translateZ(0);
-  transition: box-shadow 220ms ease, transform 220ms ease;
+  will-change: transform, opacity;
 }
 
-.project-tile__image,
-.project-tile__placeholder {
-  position: absolute;
-  inset: 0;
+.tile__image {
+  display: block;
   width: 100%;
   height: 100%;
-}
-
-.project-tile__image {
   object-fit: cover;
-  transition: transform 320ms ease;
+  object-position: center;
+  /* Matches the card that clips it. transitions.js reads the radius off this
+     element to start the flight with, and a bare 0 here would launch every
+     project from a square. */
+  border-radius: var(--card-radius);
+  transition: transform 500ms cubic-bezier(0.2, 0.6, 0.2, 1);
 }
 
-.project-tile--mit-motorsports-driverless .project-tile__image {
-  object-position: 40% center;
+.tile__card:hover .tile__image,
+.tile__card:focus-visible .tile__image {
+  transform: scale(1.03);
 }
 
-.project-tile--multi-agent-testbed .project-tile__image {
-  object-position: 36% center;
-}
-
-.project-tile--rss-autonomous-car {
-  --rss-tile-x: 62%;
-  --rss-tile-y: 50%;
-  --rss-tile-scale: 1;
-  --rss-tile-hover-scale: 1.035;
-}
-
-.project-tile--rss-autonomous-car .project-tile__image {
-  object-position: var(--rss-tile-x) var(--rss-tile-y);
-  transform: scale(var(--rss-tile-scale));
-}
-
-.project-tile:hover .project-tile__image,
-.project-tile:focus-visible .project-tile__image {
-  transform: scale(1.035);
-}
-
-.project-tile--rss-autonomous-car:hover .project-tile__image,
-.project-tile--rss-autonomous-car:focus-visible .project-tile__image {
-  transform: scale(var(--rss-tile-hover-scale));
-}
-
-.project-tile:hover,
-.project-tile:focus-visible {
-  box-shadow: 0 26px 62px rgba(15, 23, 42, 0.18);
-  transform: translateY(-2px);
-}
-
-.project-tile::before {
-  content: "";
+/* The reference sets pale text straight on the photo, which works only because
+   that image happens to be dark where the label sits. These covers vary, so
+   the label carries its own scrim. */
+.tile__name {
   position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.18) 48%, rgba(0, 0, 0, 0.64) 100%);
-  opacity: 0.82;
-  transition: opacity 180ms ease;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 46px 22px 18px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+  color: #fff;
+  font-size: clamp(1rem, 1.35vw, 1.25rem);
+  font-weight: var(--weight-title);
+  line-height: 1.2;
 }
 
-.project-tile:hover::before,
-.project-tile:focus-visible::before {
-  opacity: 0.96;
-}
+/* --- Dots ---------------------------------------------------------------- */
 
-.project-tile__placeholder {
-  background:
-    linear-gradient(135deg, rgba(156, 163, 175, 0.32), transparent 54%),
-    linear-gradient(45deg, transparent 0 47%, rgba(255, 255, 255, 0.26) 47% 53%, transparent 53%),
-    #111827;
-}
-
-.project-tile__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
+.dots {
+  position: fixed;
+  top: 50%;
+  right: 14px;
+  z-index: 10;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: clamp(18px, 2.3vw, 28px);
+  gap: 2px;
+  transform: translateY(-50%);
 }
 
-.project-tile__overlay h3 {
-  margin: 0;
-  color: #ffffff;
-  font-size: clamp(1.05rem, 1.8vw, 1.45rem);
-  font-weight: 900;
-  line-height: 1.04;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.72), 0 0 2px rgba(0, 0, 0, 0.9);
-}
-
-.project-tile__overlay p {
-  max-height: 0;
-  margin: 0;
-  overflow: hidden;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: clamp(0.88rem, 1.1vw, 1rem);
-  line-height: 1.35;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: max-height 220ms ease, margin-top 220ms ease, opacity 180ms ease, transform 220ms ease;
-}
-
-.project-tile:hover .project-tile__overlay p,
-.project-tile:focus-visible .project-tile__overlay p {
-  max-height: 7.2rem;
-  margin-top: 10px;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.project-page,
-.simple-page {
-  max-width: 920px;
-}
-
-.project-hero,
-.simple-page__header {
-  padding: clamp(64px, 10vh, 110px) 0 32px;
-}
-
-.project-hero h1 {
-  margin-top: 14px;
-  font-size: clamp(2.6rem, 6.2vw, 4.55rem);
-  line-height: 0.96;
-}
-
-.simple-page__header h1 {
-  margin-top: 14px;
-  font-size: clamp(2.8rem, 7vw, 5.2rem);
-}
-
-.project-lede,
-.simple-page__header p {
-  max-width: 760px;
-  margin: 18px 0 0;
-  color: var(--muted);
-  font-size: clamp(1rem, 2vw, 1.18rem);
-}
-
-.project-hero__image {
-  margin: 30px 0 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface-strong);
-}
-
-.project-hero__media {
-  margin: 30px 0 0;
-}
-
-.project-hero__image img {
-  width: 100%;
-  max-height: 520px;
-  background: #030507;
-  object-fit: cover;
-}
-
-.project-hero__media video {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  max-height: 520px;
-  border-radius: var(--radius);
-  background: #030507;
-  object-fit: cover;
-}
-
-.project-hero__media figcaption {
-  max-width: 720px;
-  margin: 9px auto 0;
+.dot {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
   padding: 0;
-  color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.35;
-  text-align: center;
-}
-
-.project-content {
-  padding-top: 8px;
-  color: var(--text);
-  font-size: 1.04rem;
-}
-
-.project-content h2 {
-  margin: 56px 0 14px;
-  font-size: clamp(1.7rem, 3.7vw, 2.35rem);
-  line-height: 1.08;
-}
-
-.project-content h3 {
-  margin: 34px 0 12px;
-  font-size: 1.38rem;
-  line-height: 1.15;
-}
-
-.project-content p,
-.project-content li {
-  color: var(--muted);
-}
-
-.project-content a {
-  color: var(--accent-strong);
-  font-weight: 750;
-  text-decoration-thickness: 0.08em;
-  text-underline-offset: 0.18em;
-}
-
-.project-content img {
-  width: 100%;
-  margin: 18px 0 8px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface-strong);
-}
-
-.project-content figure {
-  margin: 24px 0;
-}
-
-.project-media {
-  margin: 26px 0 34px;
-}
-
-.project-media video,
-.project-content .project-media img {
-  width: 100%;
-  margin: 0;
   border: 0;
-  border-radius: var(--radius);
-  background: #030507;
+  background: none;
+  cursor: pointer;
 }
 
-.project-media video {
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+.dot::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.35;
+  transition: opacity 180ms ease, background-color 180ms ease;
+}
+
+.dot:hover::before {
+  opacity: 0.7;
+}
+
+.dot[aria-current="true"]::before {
+  background: var(--text);
+  opacity: 1;
+}
+
+/* --- Project page -------------------------------------------------------- */
+
+.project {
+  max-width: 780px;
+}
+
+.project__media {
+  margin: 0 0 34px;
+}
+
+.project__media img,
+.project__media video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--card-radius);
+}
+
+.project__media figcaption {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+/* --- Long-form content --------------------------------------------------- */
+
+.prose {
+  max-width: 68ch;
+}
+
+.prose > *:first-child {
+  margin-top: 0;
+}
+
+.prose h2 {
+  margin: 42px 0 12px;
+  font-size: 1.25rem;
+  letter-spacing: -0.012em;
+}
+
+.prose h3 {
+  margin: 30px 0 8px;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 17px;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.25em;
+}
+
+.prose li {
+  margin-bottom: 6px;
+}
+
+.prose a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--muted);
+  text-underline-offset: 3px;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--text);
+}
+
+.prose img {
+  height: auto;
+  border-radius: var(--radius);
+}
+
+.prose figure {
+  margin: 26px 0;
+}
+
+.prose figcaption {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.prose blockquote {
+  margin: 0 0 17px;
+  padding-left: 16px;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+}
+
+.prose code {
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: var(--surface);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875em;
+}
+
+.prose pre {
+  overflow-x: auto;
+  margin: 0 0 17px;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.prose pre code {
+  padding: 0;
+  background: none;
+}
+
+.prose table {
+  width: 100%;
+  margin: 0 0 17px;
+  border-collapse: collapse;
+}
+
+.prose th,
+.prose td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.prose th {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.prose hr {
+  margin: 34px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+/* --- Figures, diagrams, data -------------------------------------------- */
+
+/* The shared media frame. Project posts wrap clips and stills in this so both
+   sit on the same sheet at the same radius. */
+.project-media {
+  margin: 26px 0;
 }
 
 .project-media__frame {
   overflow: hidden;
   border-radius: var(--radius);
-  background: #030507;
+  background: var(--surface);
 }
 
-.project-media__frame video {
+.project-media img,
+.project-media video {
   display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
 }
 
-.project-media--lidar-clustering .project-media__frame video {
-  transform: scale(1.025);
-  transform-origin: center bottom;
-}
-
-.project-media--planning-demo .project-media__frame video {
-  transform: scale(1.07);
-  transform-origin: center center;
+.project-media__frame img,
+.project-media__frame video {
+  border-radius: 0;
 }
 
 .project-media figcaption {
-  max-width: 720px;
-  margin: 9px auto 0;
+  margin-top: 10px;
   color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.35;
-  text-align: center;
+  font-size: 0.8125rem;
 }
 
-.project-content iframe {
-  border: 0;
+/* Matplotlib exports carry their own near-white background, which glares on a
+   near-black page. Rather than invert the plot and lie about its colours, the
+   chart is presented as what it is — a printed sheet — and sheet and ink are
+   dimmed together in dark so the card recedes instead of shouting. */
+.plate {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
 }
 
-.video-embed {
-  position: relative;
+.plate img {
+  display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: auto;
+  border-radius: 2px;
+}
+
+:root[data-theme="dark"] .plate {
+  border-color: #2a2a2a;
+  filter: brightness(0.86) contrast(1.03);
+}
+
+/* Diagrams are authored inline as SVG so they inherit the page's type and its
+   greys, and redraw correctly the instant the theme flips. Every value comes
+   from a token; the markup carries no colour of its own. */
+.dg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 4px 0;
+}
+
+.dg text {
+  font-family: inherit;
+  font-size: 14px;
+  fill: var(--text);
+}
+
+.dg .t-mid {
+  text-anchor: middle;
+}
+
+.dg .t-sm {
+  font-size: 13px;
+}
+
+.dg .t-tag {
+  font-size: 11px;
+  letter-spacing: 0.09em;
+}
+
+.dg .t-mut {
+  fill: var(--muted);
+}
+
+.dg .t-key {
+  font-weight: var(--weight-title);
+}
+
+.dg .box {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.dg .box--key {
+  fill: var(--card-bg);
+  stroke: var(--text);
+  stroke-width: 1.5;
+}
+
+.dg .link {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.25;
+}
+
+.dg .link--soft {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.dg .link--dash {
+  stroke-dasharray: 4 4;
+}
+
+.dg .head {
+  fill: var(--muted);
+}
+
+.dg .node {
+  fill: var(--text);
+}
+
+.dg .node--open {
+  fill: var(--bg);
+  stroke: var(--muted);
+  stroke-width: 1.25;
+}
+
+.dg .knock {
+  fill: var(--bg);
+}
+
+.dg .rule {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+/* Win / tie / loss bars. Grayscale carries the ranking: solid, mid, hollow. */
+.dg .bar-win {
+  fill: var(--text);
+}
+
+.dg .bar-tie {
+  fill: var(--muted);
+}
+
+.dg .bar-loss {
+  fill: var(--card-bg);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.dg .bar-num {
+  font-size: 13px;
+  fill: var(--bg);
+}
+
+.dg .bar-num--out {
+  fill: var(--text);
+}
+
+/* A row of headline numbers. One hairline grid, cells painted in page colour. */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 1px;
+  margin: 24px 0;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: var(--surface-strong);
+  background: var(--line);
 }
 
-.video-embed iframe {
-  position: absolute;
-  inset: 0;
+.stat {
+  padding: 14px 16px;
+  background: var(--bg);
+}
+
+.stat__value {
+  font-size: 1.5rem;
+  font-weight: var(--weight-title);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.stat__label {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+/* Numeric comparison table: figures right-aligned on tabular numerals so the
+   columns read as columns. */
+.data-table {
   width: 100%;
-  height: 100%;
+  margin: 0 0 17px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table th,
+.data-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  text-align: left;
+}
+
+.data-table th {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.8125rem;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.data-table .win {
+  font-weight: var(--weight-title);
+}
+
+.table-note {
+  margin: -6px 0 17px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+/* --- Resume -------------------------------------------------------------- */
+
+.inline-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.inline-action:hover {
+  background: var(--surface);
+}
+
+.inline-action svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
 }
 
 .pdf-frame {
   width: 100%;
-  min-height: 78vh;
+  height: min(76vh, 900px);
+  margin-top: 18px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
 }
 
-hr {
-  height: 1px;
-  margin: 42px 0;
-  border: 0;
-  background: var(--line);
+/* --- Smooth scroll ------------------------------------------------------- */
+
+/* Lenis drives .pane-right and writes its state onto that element as classes.
+   These are the two rules from the library's own stylesheet this page needs:
+   an iframe would otherwise swallow the wheel mid-glide, and a nested scroller
+   would chain its overscroll back out into the pane. */
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
-blockquote {
-  margin: 24px 0;
-  padding: 4px 0 4px 18px;
-  border-left: 3px solid var(--accent);
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
 }
 
-ul,
-ol {
-  padding-left: 1.25rem;
+/* --- Page transitions ---------------------------------------------------- */
+
+/* A navigation is three moves: the outgoing shell fades while whatever is being
+   handed over holds still above it, the browser swaps documents, and the
+   incoming shell plays itself in around a flyer that lands on its destination.
+   transitions.js owns the timing and the flight; this is the shape of it.
+
+   The entry is an animation rather than a class the page waits to have taken
+   off it. `both` fill means it runs to a visible page whether or not any script
+   is there to clean up after it, so a failed asset can never leave the site
+   blank. */
+
+.shell {
+  transition: opacity 240ms var(--ease-page), transform 240ms var(--ease-page);
 }
 
-@media (max-width: 1150px) {
-  .project-gallery {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+:root.is-entering .shell {
+  animation: page-in 600ms var(--ease-page) both;
 }
 
-@media (max-width: 760px) {
-  .site-bar {
-    top: 10px;
-  }
+:root.is-leaving .shell {
+  opacity: 0;
+  transform: translateY(-6px);
+}
 
-  .site-nav {
-    width: min(100% - 24px, var(--max));
-    min-height: 56px;
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
   }
-
-  .nav-links {
-    gap: 3px;
-    padding: 6px;
-  }
-
-  .nav-link,
-  .theme-toggle {
-    gap: 6px;
-    padding: 0 8px;
-    font-size: 0.78rem;
-  }
-
-  .theme-toggle {
-    flex: 0 0 auto;
-    width: 34px;
-    padding: 0;
-  }
-
-  .work-section,
-  .project-page,
-  .simple-page {
-    width: min(100% - 28px, var(--max));
-  }
-
-  .project-content {
-    font-size: 1rem;
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-@media (max-width: 620px) {
-  .project-gallery {
-    grid-template-columns: 1fr;
+/* A flight measures its destination the moment the page arrives, and the rise
+   above would have that box 14px below where it comes to rest — enough that the
+   landing visibly jumps as the shell settles under it. So a page receiving a
+   flight only fades: the flight is already the motion, and a second one moving
+   underneath it was never going to read as one gesture anyway.
+
+   It is a separate class from the one hiding the hero because the two have
+   different lifetimes. This one has to survive untouched until the animation it
+   belongs to is over — swapping animation-name midway restarts the animation,
+   which would flash the page back to nothing. */
+:root.is-flat.is-entering .shell {
+  animation-name: page-in-flat;
+}
+
+@keyframes page-in-flat {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A hero held back until its flyer lands on it. transitions.js takes over with
+   an inline visibility the moment it has measured, so this only has to cover
+   the frames before it runs — but it is set in the document head, which is the
+   only place early enough to stop the hero flashing at its destination. */
+:root.is-hero-in .project__media img,
+:root.is-hero-in .project__media video {
+  visibility: hidden;
+}
+
+/* The travelling copy, pinned to the viewport outside .shell so the fade never
+   reaches it. */
+.hero-fly {
+  position: fixed;
+  z-index: 50;
+  display: block;
+  max-width: none;
+  object-fit: cover;
+  /* transitions.js composes translate-then-scale against the destination's
+     top-left corner, so that corner has to be the origin, not the centre. */
+  transform-origin: 0 0;
+  pointer-events: none;
+  will-change: transform, clip-path;
+}
+
+/* --- Mobile -------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  /* .pane-left dissolves so .identity and .icon-row become grid items of
+     .shell directly: identity pinned top, icons pinned bottom, tiles between. */
+  .pane-left {
+    display: contents;
   }
 
-  .intro-tile {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  /* Rows are assigned explicitly: with display:contents the three items would
+     otherwise fall in DOM order, putting the icon row in the middle. */
+  .identity {
+    grid-row: 1;
+    padding: 18px var(--gutter) 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .pane-right {
+    grid-row: 2;
+  }
+
+  .icon-row {
+    grid-row: 3;
+  }
+
+  .identity__title {
+    font-size: 1.6rem;
+  }
+
+  .identity__sub,
+  [data-page="home"] .identity__sub {
+    margin-top: 3px;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+  }
+
+  /* The oversized home tagline is a desktop-pane effect; in a top bar it would
+     take the whole row off the tiles. */
+  [data-page="home"] .identity__sub {
+    font-size: 1.6rem;
+    line-height: 1.1;
+  }
+
+  .pane-right {
+    padding: 20px var(--gutter) 28px;
+  }
+
+  .icon-row {
+    justify-content: space-around;
+    margin: 0;
+    padding: 6px var(--gutter);
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .dots {
+    display: none;
+  }
+
+  /* Home floats the identity and the icons over a full-height tile stack, so
+     cards pass behind them. Inner pages keep the bar layout on purpose: prose
+     scrolling under a floating title would be unreadable. */
+  [data-page="home"] .shell {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  [data-page="home"] .identity {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 5;
+    padding: clamp(22px, 5vw, 46px) var(--gutter) 0;
+    border-bottom: 0;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  [data-page="home"] .identity__title,
+  [data-page="home"] .identity__sub {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    line-height: 1.14;
+  }
+
+  [data-page="home"] .pane-right {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  [data-page="home"] .icon-row {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 5;
     justify-content: center;
+    gap: 12px;
+    margin: 0;
+    padding: 0 var(--gutter)
+      max(clamp(18px, 4vw, 38px), env(safe-area-inset-bottom));
+    border-top: 0;
+    background: none;
+  }
+
+  /* No dots at this width, so the 22px they reserve comes back. */
+  [data-page="home"] .pane-right {
+    padding-inline: var(--gutter);
   }
 }
 
-@media (max-width: 430px) {
-  .nav-links {
-    gap: 7px;
+@media (prefers-reduced-motion: reduce) {
+  .tile__image,
+  .icon-btn,
+  .dot::before,
+  .shell {
+    transition: none;
   }
 
-  .nav-link,
-  .theme-toggle {
-    padding: 0 4px;
-  }
-
-  .theme-toggle {
-    padding: 0;
+  /* scroll.js and transitions.js both bow out entirely at this setting, and
+     the head script never sets the class. This is only here so the rule cannot
+     be reached by a stale class left on the element. */
+  :root.is-entering .shell {
+    animation: none;
   }
 }
