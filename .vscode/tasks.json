@@ -2,25 +2,27 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Run Jekyll Server",
+      "label": "Dev server",
       "type": "shell",
-      "command": "./tools/run.sh",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
+      "command": "npm run dev",
+      "group": { "kind": "build", "isDefault": true },
       "problemMatcher": [],
-      "detail": "Runs the Jekyll server with live reload."
+      "detail": "Vite dev server with HMR."
     },
     {
-      "label": "Build Jekyll Site",
+      "label": "Build",
       "type": "shell",
-      "command": "./tools/test.sh",
-      "group": {
-        "kind": "build"
-      },
+      "command": "npm run build",
+      "group": { "kind": "build" },
       "problemMatcher": [],
-      "detail": "Build the Jekyll site for production."
+      "detail": "Prerender the static site into build/client."
+    },
+    {
+      "label": "Typecheck",
+      "type": "shell",
+      "command": "npm run typecheck",
+      "group": { "kind": "test" },
+      "problemMatcher": []
     }
   ]
 }

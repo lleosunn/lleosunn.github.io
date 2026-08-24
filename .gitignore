@@ -1,19 +1,9 @@
-# Bundler cache
-.bundle
-vendor
-Gemfile.lock
-
-# Jekyll cache
-.jekyll-cache
-.jekyll-metadata
-_site
-
-# RubyGems
-*.gem
-
-# NPM dependencies
+# Dependencies
 node_modules
-package-lock.json
+
+# Build output
+build
+.react-router
 
 # IDE configurations
 .idea
@@ -24,5 +14,3 @@ package-lock.json
 
 # Misc
 .DS_Store
-_sass/vendors
-assets/js/dist

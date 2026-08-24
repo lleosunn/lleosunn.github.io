@@ -1,27 +1,17 @@
 {
-  "name": "Jekyll",
-  "image": "mcr.microsoft.com/devcontainers/jekyll:2-bullseye",
+  "name": "leosun.org",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
   "onCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postCreateCommand": "npm install",
+  "forwardPorts": [5173],
   "customizations": {
     "vscode": {
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "zsh"
-      },
       "extensions": [
-        // Liquid tags auto-complete
-        "killalau.vscode-liquid-snippets",
-        // Liquid syntax highlighting and formatting
-        "Shopify.theme-check-vscode",
-        // Shell
-        "timonwong.shellcheck",
-        "mkhl.shfmt",
-        // Common formatter
-        "EditorConfig.EditorConfig",
+        "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
+        "EditorConfig.EditorConfig",
         "stylelint.vscode-stylelint",
         "yzhang.markdown-all-in-one",
-        // Git
         "mhutchie.git-graph"
       ]
     }

@@ -1,0 +1,69 @@
+/* Inline SVG icons. Replaces the 1.1MB FontAwesome dependency, which served six
+   glyphs. Ported verbatim from _includes/icons.html. */
+
+const common = {
+  viewBox: "0 0 24 24",
+  "aria-hidden": true,
+  focusable: "false"
+} as const;
+
+const stroked = {
+  ...common,
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round",
+  strokeLinejoin: "round"
+} as const;
+
+export function HomeIcon() {
+  return (
+    <svg {...stroked}>
+      <path d="M3 10.6 12 3.5l9 7.1" />
+      <path d="M5.4 9.3V20a.8.8 0 0 0 .8.8h3.6v-5.6h4.4v5.6h3.6a.8.8 0 0 0 .8-.8V9.3" />
+    </svg>
+  );
+}
+
+export function LinkedInIcon() {
+  return (
+    <svg {...common} fill="currentColor">
+      <path d="M6.94 8.98v11.03H3.27V8.98h3.67ZM5.11 3.3a2.13 2.13 0 1 1 0 4.25 2.13 2.13 0 0 1 0-4.25Zm4.13 5.68h3.52v1.5h.05a3.86 3.86 0 0 1 3.47-1.9c3.71 0 4.4 2.44 4.4 5.62v5.81h-3.67v-5.15c0-1.23-.02-2.81-1.71-2.81-1.72 0-1.98 1.34-1.98 2.72v5.24H9.24V8.98Z" />
+    </svg>
+  );
+}
+
+export function GitHubIcon() {
+  return (
+    <svg {...common} fill="currentColor">
+      <path d="M12 1.8a10.2 10.2 0 0 0-3.23 19.88c.51.1.7-.22.7-.49l-.01-1.9c-2.84.62-3.44-1.2-3.44-1.2-.47-1.18-1.14-1.5-1.14-1.5-.93-.63.07-.62.07-.62 1.03.07 1.57 1.06 1.57 1.06.91 1.57 2.4 1.11 2.99.85.09-.66.36-1.11.65-1.37-2.27-.26-4.65-1.14-4.65-5.05 0-1.12.4-2.03 1.05-2.75-.11-.26-.46-1.3.1-2.71 0 0 .86-.28 2.82 1.05a9.74 9.74 0 0 1 5.14 0c1.96-1.33 2.82-1.05 2.82-1.05.56 1.41.21 2.45.1 2.71.65.72 1.05 1.63 1.05 2.75 0 3.92-2.39 4.79-4.66 5.04.37.32.69.94.69 1.89l-.01 2.8c0 .27.19.59.71.49A10.2 10.2 0 0 0 12 1.8Z" />
+    </svg>
+  );
+}
+
+export function ResumeIcon() {
+  return (
+    <svg {...stroked}>
+      <path d="M14 3H6.8a.8.8 0 0 0-.8.8v16.4a.8.8 0 0 0 .8.8h10.4a.8.8 0 0 0 .8-.8V7Z" />
+      <path d="M14 3v4h4" />
+      <path d="M9 12.5h6M9 16h6" />
+    </svg>
+  );
+}
+
+export function SunIcon() {
+  return (
+    <svg {...stroked}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.6v2.1M12 19.3v2.1M4.4 4.4l1.5 1.5M18.1 18.1l1.5 1.5M2.6 12h2.1M19.3 12h2.1M4.4 19.6l1.5-1.5M18.1 5.9l1.5-1.5" />
+    </svg>
+  );
+}
+
+export function MoonIcon() {
+  return (
+    <svg {...stroked}>
+      <path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1Z" />
+    </svg>
+  );
+}
