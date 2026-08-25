@@ -88,6 +88,13 @@
      if they are the same numbers. It leaves gently, covers most of the distance
      in the middle third, and then takes a long time to arrive. */
   --ease-page: cubic-bezier(0.32, 0, 0, 1);
+
+  /* Its easeOutCubic, and the twin of EASE_OUT_CUBIC in app/lib/motion.ts. The
+     short curve, for the things that happen often and small. */
+  --ease-line: cubic-bezier(0.215, 0.61, 0.355, 1);
+
+  /* PAGE_S. Everything a navigation moves runs exactly this long. */
+  --dur-page: 1200ms;
 }
 
 :root[data-theme="dark"] {
@@ -208,6 +215,28 @@ button {
   min-width: 0;
 }
 
+/* Each line of the heading sits in a box that clips it, so it can be turned
+   like an odometer rather than cross-faded when the route changes — see
+   rollIdentity in usePageTransition.ts for why that is the only readable way to
+   replace type in a slot that stays where it is.
+
+   Padding at the foot and not the head, and taken straight back out of the
+   layout: descenders would otherwise be shaved off against the clip, and the
+   negative margin means the mask occupies exactly the space the bare heading
+   used to. At the seam between two masks the padding of one and the margin of
+   the other cancel, so the spacing between the name and the tagline is
+   unchanged. */
+.identity__mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 8px;
+  margin-bottom: -8px;
+}
+
+.identity__roll {
+  display: block;
+}
+
 .identity__title {
   margin: 0;
   font-size: clamp(1.6rem, 2.55vw, 2.6rem);
@@ -236,7 +265,7 @@ button {
    separated from the name by colour alone. Elsewhere the same slot holds a
    project description — a full sentence, which would be unreadable at that
    size — so the large treatment is scoped to home. */
-[data-page="home"] .identity__sub {
+.identity[data-from="home"] .identity__sub {
   max-width: none;
   margin-top: 0;
   font-size: clamp(1.6rem, 2.55vw, 2.6rem);
@@ -250,6 +279,23 @@ button {
   display: flex;
   gap: clamp(5px, 0.4vw, 8px);
   margin: clamp(26px, 3.9vw, 56px) 0 0;
+}
+
+/* Divides the four links that leave the site from the one that navigates it.
+   Shorter than the buttons and centred against them, so it reads as a seam in
+   the row rather than a fifth control; the margin is on top of the row's own
+   gap, which alone is too tight to separate anything. */
+.icon-row__rule {
+  flex: 0 0 1px;
+  align-self: center;
+  width: 1px;
+  height: clamp(20px, 1.9vw, 28px);
+  margin: 0 clamp(3px, 0.35vw, 7px);
+  /* --line, the border colour used everywhere else, is #e2e2e2 on an #f2f2f2
+     page — correct for a border that should be felt rather than seen, and
+     useless for a mark whose whole job is to be noticed. --muted reads clearly
+     in both themes at one pixel wide. */
+  background: var(--muted);
 }
 
 .icon-btn {
@@ -276,10 +322,6 @@ button {
 .icon-btn:hover,
 .icon-btn:focus-visible {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-}
-
-.icon-btn.is-current {
-  color: var(--text);
 }
 
 .theme-toggle__icon {
@@ -958,6 +1000,74 @@ button {
   transition: opacity 240ms var(--ease-page), transform 240ms var(--ease-page);
 }
 
+/* The wrapper every route lives in.
+ *
+ * `display: contents` while it is live, so it generates no box at all and the
+ * route's own root — .tiles, .project, .prose — is still a direct child of the
+ * pane as far as layout is concerned. Nothing the deck or the prose is sized
+ * against changes because of it. It exists only so that the page which is
+ * leaving has something of its own to become. */
+.pane-page {
+  display: contents;
+}
+
+/* And what it becomes: a photograph of where the page was, pinned to the
+   viewport for as long as it takes to fade.
+ *
+ * Fixed rather than absolute because the pane underneath it is about to change
+ * both its padding and its overflow (home and the inner pages do not agree
+ * about either) and is about to be scrolled back to the top for the route that
+ * is arriving. A box positioned against the viewport and measured once is
+ * immune to all of it. The rectangle, the padding and the clip are written
+ * inline by routes/layout.tsx from what was measured at the click. */
+.pane-ghost {
+  display: block;
+  position: fixed;
+  overflow: hidden;
+  /* Above the arriving page, which is what makes this a cross-dissolve rather
+     than a reveal. The deck gives its cards z-indexes up to 1000 and this has
+     to clear them; .pane-right isolates, so nothing here can reach the dots or
+     the icon row, which is exactly right — those persist and stay on top. */
+  z-index: 1001;
+}
+
+.identity.is-ghost {
+  position: fixed;
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* --- Type, mid-reveal ---------------------------------------------------- */
+
+/* Written by app/lib/splitLines.ts and gone again the moment the animation
+   ends. The outer span is the mask and does not move; the inner one is the
+   line, and it starts a line-height below and slides up into view.
+
+   The padding is for descenders. A mask sized to the line box clips the tail of
+   a "g" against its own bottom edge; the negative margin takes the extra height
+   back out of the layout so the paragraph is the shape it was. It is small
+   enough that a line held at 1.15em below is still completely hidden. */
+.line {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.14em;
+  margin-block: -0.14em;
+}
+
+.line__i {
+  display: block;
+  will-change: translate;
+}
+
+/* The thing the travelling copy was made from, for as long as the copy is
+   standing in for it. See useHeroFlight.ts for why this is a class and not an
+   inline style: the deck's painter owns `visibility` on .tile__card and clears
+   it every frame, and a rule it cannot reach is the only way to hold a card
+   hidden while it is being handed over. */
+.is-handoff {
+  visibility: hidden;
+}
+
 /* The travelling copy, pinned to the viewport outside .shell so the fade never
    reaches it. */
 .hero-fly {
@@ -1008,7 +1118,7 @@ button {
   }
 
   .identity__sub,
-  [data-page="home"] .identity__sub {
+  .identity[data-from="home"] .identity__sub {
     margin-top: 3px;
     font-size: 0.9375rem;
     line-height: 1.45;
@@ -1016,7 +1126,7 @@ button {
 
   /* The oversized home tagline is a desktop-pane effect; in a top bar it would
      take the whole row off the tiles. */
-  [data-page="home"] .identity__sub {
+  .identity[data-from="home"] .identity__sub {
     font-size: 1.6rem;
     line-height: 1.1;
   }
@@ -1045,7 +1155,7 @@ button {
     grid-template-rows: minmax(0, 1fr);
   }
 
-  [data-page="home"] .identity {
+  .identity[data-from="home"] {
     position: fixed;
     top: 0;
     right: 0;
@@ -1057,8 +1167,8 @@ button {
     pointer-events: none;
   }
 
-  [data-page="home"] .identity__title,
-  [data-page="home"] .identity__sub {
+  .identity[data-from="home"] .identity__title,
+  .identity[data-from="home"] .identity__sub {
     font-size: clamp(1.5rem, 6vw, 2rem);
     line-height: 1.14;
   }

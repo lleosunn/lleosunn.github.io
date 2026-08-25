@@ -20,6 +20,14 @@ const BATCH = 4;
    enough that a cold one never reads as the site having hung. */
 export const WARM_CAP = 520;
 
+/* The opening's own cap, and much longer, because the two waits are not the
+   same wait. WARM_CAP runs while a navigation is already visibly under way and
+   is only buying the flight a decoded image to land on; overrun it and the
+   flight blinks once. This one runs before the site has shown anything at all,
+   and the reference is willing to spend three full seconds on it rather than
+   open onto a page whose first picture is still arriving. Their number too. */
+export const BOOT_CAP = 3000;
+
 const after = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /* Resolves on decode, not merely on load: an image that has arrived but not

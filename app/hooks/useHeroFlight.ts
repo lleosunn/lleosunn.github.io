@@ -1,5 +1,5 @@
 import { useEffect, type RefObject } from "react";
-import { EASE_CSS, REVEAL_MS } from "../lib/motion";
+import { EASE_CSS, PAGE_MS } from "../lib/motion";
 
 /* The card that flies between the home deck and a project page.
  *
@@ -10,59 +10,38 @@ import { EASE_CSS, REVEAL_MS } from "../lib/motion";
  * are in the same document, a module-level variable carries the rectangle
  * across, and the flight is an ordinary FLIP.
  *
- * What changed with the transition rewrite is *when* the travelling copy is
- * made. It used to be built on arrival, which was fine while a click navigated
- * instantly — but the page now spends a couple of hundred milliseconds leaving
- * first, and during that time the card the user clicked was still an ordinary
- * child of .shell, fading out with everything else. So the copy is lifted at
- * click time instead. It is pinned to the viewport outside .shell, which is
- * what lets the whole page clear out from under it while it holds perfectly
- * still — the subject of the navigation never blinks.
- *
  * The scale is uniform, always: a photo stretched between a near-square card
  * and a wide banner is the one thing that gives a morph away. The two boxes
  * rarely share an aspect ratio, and that difference is taken up by a clip
  * instead — at the start the flyer is masked to the source's shape, and the
  * mask opens as it travels. Nothing inside is distorted; the window onto it
- * widens. */
+ * widens.
+ *
+ * (The reference gets away with a plain shared-layout morph and no clip at all,
+ * but only because its card and its project hero are the same rectangle at two
+ * sizes — 33.5/34.4 at both ends. Ours are 0.96 and about 1.78. The clip is
+ * doing real work here and is the one place this deliberately keeps its own
+ * mechanism rather than copying theirs.)
+ *
+ * What changed when the navigation stopped waiting is that the flight no longer
+ * has to fill time. It used to be built at click time and then hold still for
+ * the length of an exit — a third of a second in which the page was visibly
+ * leaving and the thing the reader had actually clicked did nothing at all —
+ * and it covered that dead beat by swelling very slightly, an anticipation
+ * before a throw. There is no dead beat now. The route mounts on the next
+ * frame, so the flight starts on the next frame, and an anticipation with
+ * nothing to anticipate is just a wobble. It is gone.
+ */
 
-/* The flight is the same move as the opening and every arrival — same curve,
-   same clock — because it is the same hand. It used to run 600ms on easeOutCirc
-   while everything around it ran 720ms on the site's curve, and a morph that
-   leaves faster than the page it is leaving reads as a separate event. */
-const FLIGHT_MS = REVEAL_MS;
+/* The same clock as everything else a navigation moves: the outgoing page
+   fading, the arriving one rising, and this. A morph that finishes before the
+   page it is landing on reads as a separate event. */
+const FLIGHT_MS = PAGE_MS;
 const LAND_MS = 180;
 
-/* The lift.
- *
- * The copy is made on the click and then stands perfectly still for the length
- * of the exit — a third of a second in which the page is visibly leaving and
- * the thing the reader actually clicked does nothing at all. It is the one dead
- * beat left in a navigation, and it is dead precisely because the flight cannot
- * start: there is no destination to fly to until the route it belongs to has
- * mounted.
- *
- * So the card starts moving without one. It swells very slightly, on the site's
- * curve, from the instant it is clicked — the anticipation before a throw. By
- * the time the destination exists the card is already in motion, and the flight
- * takes over from wherever the lift has got to rather than from a standstill.
- *
- * Written to `scale`, the standalone property, so it composes with the
- * `transform` the flight itself owns instead of fighting it. `transform-origin`
- * is the top-left corner (the flight needs it there), so the lift carries a
- * matching `translate` to keep the card growing about its own centre — without
- * it the card would slide down and right as it swells. Both unwind to nothing
- * over the flight, which is what makes the landing exact. */
-const LIFT = 1.04;
-
-/* Long enough to cover the exit and the render after it, so the swell is still
-   in progress when the flight claims it. Overshooting is harmless: the unwind
-   starts from wherever the lift actually is. */
-const LIFT_MS = 380;
-
 /* A flyer whose navigation never happened would otherwise sit over the page
-   forever. Long enough to cover an exit plus a slow route, short enough that a
-   cancelled click cleans itself up before it is noticed. */
+   forever. Long enough to cover a slow route, short enough that a cancelled
+   click cleans itself up before it is noticed. */
 const ORPHAN_MS = 2500;
 
 export interface Shot {
@@ -78,7 +57,9 @@ export interface Shot {
 interface Pending {
   shot: Shot;
   node: HTMLImageElement;
-  lift: Animation | null;
+  /* The thing the flyer was copied from, hidden for as long as the copy is
+     standing in for it. */
+  source: HTMLElement | null;
   orphan: ReturnType<typeof setTimeout>;
 }
 
@@ -123,16 +104,37 @@ function makeFlyer(shot: Shot) {
   return img;
 }
 
+/* What to hide while the copy is out, and how.
+ *
+ * A tile's image fills its card exactly — same box, same radius — so hiding the
+ * card rather than the picture leaves no empty rounded plate behind on the page
+ * that is fading out. Everywhere else the element itself is the whole of what
+ * was copied. This mattered little when the outgoing page left in a quarter of
+ * a second; it lingers for the length of the flight now.
+ *
+ * It is a class and not an inline style because useDeck's painter also writes
+ * `visibility` to .tile__card — it hides the cards past the far edge of the
+ * wheel and clears the property on every card still on it, every frame. An
+ * inline `hidden` written here survives until the next paint and no longer,
+ * which is about ten milliseconds. A class the painter does not know about
+ * survives because clearing the inline value is precisely what lets it apply.
+ * (Two owners of one property, and the way out is to stop sharing it.) */
+const HANDOFF = "is-handoff";
+
+function coverFor(el: Element): HTMLElement {
+  return (el.closest<HTMLElement>(".tile__card") ?? el) as HTMLElement;
+}
+
 /* True from the moment an arriving route claims the flight until that flight
    has landed or given up.
 
    `pending` cannot answer this on its own. The claim happens in the arriving
    route's effect, and React runs a child route's effects before its parent
-   layout's — so by the time usePageEnter asks, the flight has already been
-   taken and `pending` is null again. The question it is actually asking is not
-   "is a flight waiting" but "is this a page a flight is arriving on", and only
-   a flag that outlives the claim can answer that. Without it every arrival
-   lifted its hero 28px underneath the copy that was landing on it. */
+   layout's — so by the time playEnter asks, the flight has already been taken
+   and `pending` is null again. The question it is actually asking is not "is a
+   flight waiting" but "is this a page a flight is arriving on", and only a flag
+   that outlives the claim can answer that. Without it every arrival lifted its
+   hero underneath the copy that was landing on it. */
 let airborne = false;
 
 export function hasPendingHero() {
@@ -143,6 +145,7 @@ export function discardHero() {
   if (!pending) return;
   clearTimeout(pending.orphan);
   pending.node.remove();
+  pending.source?.classList.remove(HANDOFF);
   pending = null;
 }
 
@@ -164,37 +167,15 @@ export function captureHero(el: Element | null | undefined) {
   node.style.borderRadius = `${shot.radius}px`;
   document.body.appendChild(node);
 
-  pending = { shot, node, lift: swell(node, shot), orphan: setTimeout(discardHero, ORPHAN_MS) };
+  const source = coverFor(el!);
+  source.classList.add(HANDOFF);
+
+  pending = { shot, node, source, orphan: setTimeout(discardHero, ORPHAN_MS) };
 }
 
-/* The anticipation, started on the click. See LIFT above for why it is written
-   to `scale` and why it drags a `translate` along with it. */
-function swell(node: HTMLImageElement, shot: Shot): Animation | null {
-  if (typeof node.animate !== "function") return null;
-  const back = (LIFT - 1) / 2;
-  return node.animate(
-    [
-      { scale: "1", translate: "0px 0px" },
-      {
-        scale: String(LIFT),
-        translate: `${(-back * shot.width).toFixed(2)}px ${(-back * shot.height).toFixed(2)}px`
-      }
-    ],
-    { duration: LIFT_MS, easing: EASE_CSS, fill: "forwards" }
-  );
-}
-
-function fly(shot: Shot, node: HTMLImageElement, lift: Animation | null, target: HTMLElement) {
+function fly(shot: Shot, node: HTMLImageElement, target: HTMLElement) {
   const to = target.getBoundingClientRect();
   if (!to.width || !to.height) return null;
-
-  /* Read before the lift is cancelled — cancelling it puts these back to their
-     unanimated values, and the whole point is to leave from where the card
-     actually is. `none` is what an untouched element reports. */
-  const held = getComputedStyle(node);
-  const fromScale = held.scale === "none" ? "1" : held.scale;
-  const fromShift = held.translate === "none" ? "0px 0px" : held.translate;
-  lift?.cancel();
 
   const scale = Math.max(shot.width / to.width, shot.height / to.height);
   const insetX = (to.width - shot.width / scale) / 2;
@@ -224,21 +205,7 @@ function fly(shot: Shot, node: HTMLImageElement, lift: Animation | null, target:
     { duration: FLIGHT_MS, easing: EASE_CSS, fill: "both" }
   );
 
-  /* The lift, given back over exactly the length of the flight. The two run on
-     one curve against the same clock, so what the eye sees is a single motion
-     that happens to have begun before its destination existed. Ending at
-     identity is not decoration: the flight's own last keyframe is `transform:
-     none`, which only lands on the destination if nothing else is still
-     scaling the node. */
-  const unwind = node.animate(
-    [
-      { scale: fromScale, translate: fromShift },
-      { scale: "1", translate: "0px 0px" }
-    ],
-    { duration: FLIGHT_MS, easing: EASE_CSS, fill: "both" }
-  );
-
-  return { node, animation, unwind };
+  return { node, animation };
 }
 
 /* Runs on the arriving page. `getTarget` is deferred because the element it
@@ -271,7 +238,7 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
     };
 
     const land = (target: HTMLElement) => {
-      const flight = fly(claimed.shot, claimed.node, claimed.lift, target);
+      const flight = fly(claimed.shot, claimed.node, target);
       if (!flight) {
         airborne = false;
         return claimed.node.remove();
@@ -293,7 +260,6 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
          hand on the wheel cuts the flight to its landing. */
       const interrupt = () => {
         flight.animation.finish();
-        flight.unwind.finish();
       };
       window.addEventListener("wheel", interrupt, { once: true, passive: true });
       window.addEventListener("touchstart", interrupt, { once: true, passive: true });
@@ -316,7 +282,6 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
         window.removeEventListener("wheel", interrupt);
         window.removeEventListener("touchstart", interrupt);
         flight.animation.cancel();
-        flight.unwind.cancel();
         reveal();
       };
     };

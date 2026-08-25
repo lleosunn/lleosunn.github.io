@@ -36,18 +36,24 @@ export function useLenis(scrollerRef: RefObject<HTMLElement | null>) {
          instead. */
       content: scroller,
       orientation: "vertical",
-      /* Long enough to read as a glide, short enough that the pane is not still
-         coasting when the next notch arrives. Past about a second the lag
-         between wheel and movement is what reads as "slow", not the speed. */
-      duration: touch ? 0 : 0.7,
+      /* The reference's number, and longer than it looks: a notch keeps moving
+         for well over a second after the hand has stopped. That is what the
+         glide is for. The instinct to shorten it — on the theory that the lag
+         between wheel and movement is what reads as slow — is what put 0.7 here
+         before, and 0.7 is not a compromise between two feels; it is a third
+         one that matches nothing. */
+      duration: touch ? 0 : 1.2,
       easing: touch
         ? (t: number) => 1 - Math.pow(1 - t, 3)
         : (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      // A notch carries further than the browser would send it, so a long
-      // project page needs fewer of them. Touch stays at 1: a finger is direct
-      // manipulation and scaling it breaks the 1:1 syncTouch exists to keep.
-      wheelMultiplier: 1.35,
+      /* One notch is one notch, both here and on the reference. Scaling it up
+         was meant to make a long project page shorter to get down; what it
+         actually did was make every page feel like it was being pulled out from
+         under the reader, because the distance no longer matched the gesture.
+         The duration above is what carries a notch further, not a multiplier —
+         the same distance, given more time. */
+      wheelMultiplier: 1,
       touchMultiplier: 1,
       syncTouch: touch,
       infinite: false

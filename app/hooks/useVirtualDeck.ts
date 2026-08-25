@@ -1,111 +1,99 @@
 import { useEffect, useRef, type RefObject } from "react";
-import { animate, cancelFrame, frame, motionValue, type AnimationPlaybackControls } from "motion";
+import {
+  animate,
+  motionValue,
+  type AnimationPlaybackControls,
+  type ValueAnimationTransition
+} from "motion";
+import { EASE, PAGE_S, STEP_SPRING } from "../lib/motion";
 
 /* The home deck's position, and the only thing that moves it.
  *
- * The pane used to be a real scroll container: 36 full-height slots, Lenis
- * smoothing scrollTop, and a snap that fired on `scrollend` and dragged the
- * nearest card the rest of the way in. That last part is what read as choppy —
- * the snap was a *second* animation that could only start once the first had
- * completely stopped, so every notch was glide, pause, correct.
+ * `pos` is a float in slot units: 3.5 is halfway between card 3 and card 4.
+ * useDeck paints the wheel from it every frame it changes, and that half of the
+ * arrangement is untouched — what lives here is where the float comes from.
  *
- * There is no scroll container here at all. `pos` is a float in slot units:
- * 3.5 is halfway between card 3 and card 4.
+ * It comes from a *step*. The deck has a whole-number cursor, and every input
+ * this file understands does exactly one thing to it: add or subtract one. The
+ * float is then a spring chasing that integer, never a quantity the input sets
+ * directly.
  *
- * While input is arriving the deck IS the input. A wheel event moves `pos` by
- * exactly its own delta, on the frame it arrives — no threshold to cross, no
- * animation in between, nothing to be late. It can rest between two cards for
- * as long as a finger is still moving.
+ * This is the reference's model (gabrielbeaugonin.com), rates and all, and it
+ * is worth being explicit that it replaced a good one rather than a broken one.
+ * The float used to BE the input: a wheel event moved `pos` by its own delta
+ * over a fixed exchange rate, and a detent pulled the remainder to a whole card
+ * when the events stopped. Nothing about that was late, and it is still the
+ * more responsive of the two on paper.
  *
- * The moment input stops, one no-bounce spring carries it to a whole card. How
- * fast the gesture was going decides which card that is, so a flick travels and
- * a nudge settles next door. It never overshoots: the destination is chosen
- * first and the spring only ever decelerates into it.
+ * What it could not do is hold a rate. One exchange rate has to serve a mouse
+ * notch (~120px, one or two per gesture), a trackpad swipe (a dense burst plus
+ * a momentum tail the OS keeps sending after the fingers have lifted, several
+ * hundred pixels for what the hand experienced as one flick) and a finger
+ * dragging a phone screen (a few hundred pixels, and the screen is only ~700
+ * tall). At 440px per card a trackpad flick crossed half the ring and a thumb
+ * swipe moved barely one card. Tuning the number fixes one device by breaking
+ * another, because the devices genuinely do not agree about what a pixel means.
  *
- * (This replaced a model that moved in whole cards only, accumulating delta
- * until it was worth one. On a mouse that was invisible — a notch is 120px and
- * clears the bar on its own. On a trackpad it was a 56px dead zone: a gentle
- * scroll produced literally no movement, and a medium one did not start for
- * 210ms. Tracking the input directly is the only thing that has no latency to
- * tune, because there is nothing between the event and the paint.)
+ * A step does not have that problem. Each device gets its own threshold and its
+ * own rate limit, in its own units, and they all produce the same thing: one
+ * card. The numbers below are the reference's.
  *
- * `pos` runs unbounded rather than being wrapped into [0, count). The ring is
- * closed at render time by wrapOffset, so nothing needs it normalised — and a
- * position that never jumps is a position a target can always be expressed
- * against, which is the bug that wrapping it caused.
+ * `pos` and the cursor both run unbounded rather than being wrapped into
+ * [0, count). The ring is closed at render time by wrapOffset, so nothing needs
+ * them normalised — and a position that never jumps is a position a target can
+ * always be expressed against, which is the bug that wrapping it caused.
+ *
+ * Direction is ours, not the reference's: wheel-down and finger-up both advance,
+ * which is what this site has always done and is not what was asked to change.
+ * Only the rates below are lifted.
  */
 
-/* Wheel pixels that make up one card of travel, and the 1:1 exchange rate while
-   a gesture is running.
+/* --- Wheel -------------------------------------------------------------- */
 
-   Tuned for a trackpad, because that is what this is mostly used with and the
-   two devices are nothing alike. A mouse notch is ~120px and a gesture is one
-   or two of them. A macOS trackpad swipe is a dense burst plus a momentum tail
-   the OS keeps sending after the fingers have lifted, and it adds up to several
-   hundred pixels for what the hand experienced as one flick. At 180 — a
-   sensible number for a mouse — that same flick crossed half the ring. */
-const SLOT_PX = 440;
+/* Below this a wheel event is not a scroll. It is the low tail of a trackpad
+   gesture, or the sideways slop in a diagonal one, and stepping a card for it
+   would make the deck impossible to hold still. */
+const WHEEL_MIN = 20;
 
-/* Stiffness of the pull toward the card the deck is currently committed to.
-   This force is never switched on or off; it acts on every frame, which is the
-   whole point. There is no moment when the deck is resting somewhere and
-   waiting to be told to snap, because it has been falling toward a card the
-   entire time. */
-const AIM_K = 320;
+/* How long the wheel is deaf after a step, as a function of how hard that step
+   was pushed. This is the whole rate control, and it is inverted on purpose: a
+   hard flick (a big delta) unlocks sooner and therefore travels further, a
+   gentle notch waits the better part of a fifth of a second and moves one card.
+   Speed of gesture becomes distance travelled without the deck ever tracking a
+   gesture's magnitude directly. */
+const wheelCooldown = (delta: number) => Math.max(30, 165 - delta);
 
-/* Just past critical. Critical alone is the fastest approach that cannot
-   oscillate, but a spring entering with speed already pointed at its target can
-   still cross it once; the margin buys that back. Anything much higher is
-   simply slow. */
-const AIM_DAMP = 1.08;
+/* --- Pointer ------------------------------------------------------------ */
 
-/* How far ahead of itself a moving deck aims, in seconds of travel. This is
-   what lets a spin pass cards rather than being caught by the first one: while
-   there is speed the committed card keeps being recomputed further along, and
-   as the speed dies the projection shrinks to nothing and the aim converges on
-   whatever the deck is nearest.
+/* Finger-pixels per card. Small, because a phone screen is short and a thumb
+   swipe is not: at anything like the wheel's scale a full-height drag would
+   move the deck by one. The origin is reset at every step, so a long drag keeps
+   stepping every 45px rather than being measured once from where it began. */
+const DRAG_STEP = 45;
 
-   Critically, the aim is a *fixed* target on any given frame. Pulling toward
-   round(pos) instead — the nearest card, recomputed from position alone — is
-   what a detent literally is, and it was the first thing tried here. It has a
-   flaw the spring cannot damp out: the target flips the moment the deck crosses
-   a midpoint, so a slow arrival near a boundary gets pulled backwards, which
-   measured as a small but real overshoot. A target that only moves with speed,
-   and stops moving before the deck arrives, cannot do that. */
-const AIM_PROJECT = 0.06;
+/* A drag that ended without ever crossing DRAG_STEP still counts if it went
+   this far — the flick that is over before it is a drag. */
+const FLICK_MIN = 30;
 
-/* The aim is set from input and from nothing else — never from the deck's own
-   velocity on a later frame. That distinction is the whole stability argument.
-   Re-deriving it per frame from the current speed reads as the obvious way to
-   let a spin keep travelling, and it runs away: the spring accelerates the deck
-   toward the aim, the faster deck projects the aim further off, and the two
-   feed each other until the ring is spinning and nothing can land. Input is a
-   bounded source. The spring's own output is not. */
+/* Floor between two steps from a pointer. Without it a fast swipe delivers its
+   45px thresholds faster than the spring can show them and the ring blurs. */
+const STEP_FLOOR = 170;
 
-const VELOCITY_WINDOW_MS = 100;
+/* --- Keyboard ----------------------------------------------------------- */
 
-/* Below these the card is centred to the eye — 0.002 of a slot is under half a
-   pixel — and chasing a remainder finer than that only keeps a frame loop alive
-   behind a pane that has visibly stopped. Tighter thresholds measurably lengthen
-   the settle without changing anything anyone can see. */
-const REST_POS = 0.002;
-const REST_VEL = 0.012;
-
-/* A tab restored after being backgrounded reports one enormous delta; clamped
-   so it cannot launch the deck across the ring in a single step. */
-const MAX_DT = 1 / 30;
-
-/* A dot or an arrow key is a deliberate jump rather than the tail of a gesture,
-   and may cross the whole ring, so it is allowed a little longer to read. */
-const TARGET_BASE = 0.22;
-const TARGET_PER_CARD = 0.05;
-const TARGET_MAX = 0.45;
+/* Held arrow keys autorepeat faster than the deck can read; deliberate presses
+   are not throttled at all, which is why this checks `repeat` first. */
+const KEY_REPEAT = 50;
 
 export function wrapOffset(delta: number, count: number) {
   const half = count / 2;
   return (((delta + half) % count) + count) % count - half;
 }
 
+/* The reference reads `deltaY` raw, which costs it Firefox: a line-mode wheel
+   reports 3, and 3 is below WHEEL_MIN, so the deck simply does not move there.
+   Normalising first is invisible everywhere it agrees and correct where it
+   does not. */
 function normalizeWheel(event: WheelEvent, port: number) {
   if (event.deltaMode === 1) return event.deltaY * 16;
   if (event.deltaMode === 2) return event.deltaY * port;
@@ -154,6 +142,11 @@ export function useVirtualDeck({
     let controls: AnimationPlaybackControls | null = null;
     let port = scroller.clientHeight || window.innerHeight;
 
+    /* The whole number every input moves, and the only thing the spring below
+       ever aims at. The deck can be anywhere between two cards; it is never
+       committed to anywhere but a card. */
+    let cursor = Math.round(pos.get());
+
     const unsubscribe = pos.on("change", (value: number) => {
       positionRef.current = value;
       onPosition(value);
@@ -169,205 +162,161 @@ export function useVirtualDeck({
       controls = null;
     };
 
-    /* The only animation this hook runs. `to` is always a whole card and the
-       spring is always bounce-free, so the deck decelerates into it and stays
-       there rather than passing it and coming back. */
-    const travel = (to: number, base: number, perCard: number, max: number) => {
-      const distance = Math.abs(to - pos.get());
-      // Nothing to do — and say so, because the caller has suspended the frame
-      // loop on the promise this would otherwise never produce.
-      if (distance < 1e-4) return false;
+    /* Retargeting rather than restarting is the point of using a spring here.
+       A second step arriving while the first is still running inherits its
+       speed, so three quick notches read as one accelerating turn instead of
+       three separate nudges that each begin from rest. */
+    const chase = (transition: ValueAnimationTransition<number>) => {
       stop();
-      controls = animate(pos, to, {
-        type: "spring",
-        bounce: 0,
-        visualDuration: Math.min(max, base + perCard * distance)
-      });
-      return true;
-    };
-
-    /* --- Velocity ------------------------------------------------------- */
-
-    /* Sampled from the positions the input actually produced rather than from
-       the raw deltas, so the wheel and a dragging finger are measured the same
-       way and land the same way. */
-    let samples: Array<{ t: number; p: number }> = [];
-
-    const sample = (p: number) => {
-      const now = performance.now();
-      samples.push({ t: now, p });
-      while (samples.length > 2 && now - samples[0].t > VELOCITY_WINDOW_MS) samples.shift();
-    };
-
-    const velocity = () => {
-      if (samples.length < 2) return 0;
-      const first = samples[0];
-      const last = samples[samples.length - 1];
-      const seconds = (last.t - first.t) / 1000;
-      return seconds > 0 ? (last.p - first.p) / seconds : 0;
-    };
-
-    /* --- The loop ------------------------------------------------------- */
-
-    let vel = 0;
-    let aim = Math.round(pos.get());
-    let running = false;
-    /* Raised only while a dot or an arrow key is driving. Two things pulling
-       the same value at once is a fight the user can see, so the detent stands
-       down for the length of a deliberate jump. */
-    let driving = false;
-
-    const tick = ({ delta }: { delta: number }) => {
-      if (driving) return;
-      const dt = Math.min(delta, MAX_DT * 1000) / 1000;
-      const here = pos.get();
-
-      const c = AIM_DAMP * 2 * Math.sqrt(AIM_K);
-      vel += (AIM_K * (aim - here) - c * vel) * dt;
-      const next = here + vel * dt;
-
-      if (Math.abs(next - aim) < REST_POS && Math.abs(vel) < REST_VEL) {
-        // The only exit. Whatever happened before it, the deck stops on a card.
-        vel = 0;
-        pos.jump(aim);
-        halt();
+      if (reduceMotion) {
+        pos.jump(cursor);
         return;
       }
-      pos.jump(next);
+      controls = animate(pos, cursor, transition);
     };
 
-    const run = () => {
-      if (running) return;
-      running = true;
-      frame.update(tick, true);
-    };
-
-    const halt = () => {
-      if (!running) return;
-      running = false;
-      cancelFrame(tick);
+    const step = (direction: 1 | -1) => {
+      cursor += direction;
+      chase(STEP_SPRING);
     };
 
     /* --- Wheel ---------------------------------------------------------- */
 
+    let wheelLock: ReturnType<typeof setTimeout> | null = null;
+
     const onWheel = (event: WheelEvent) => {
       if (event.ctrlKey) return; // pinch-zoom, not a scroll
       event.preventDefault();
+      if (wheelLock) return;
 
-      // The hand is back on the wheel; a targeted move gives way to it.
-      stop();
-      driving = false;
+      const delta = normalizeWheel(event, port);
+      const size = Math.abs(delta);
+      if (size < WHEEL_MIN) return;
 
-      // jump(), not set(): this is the input itself, not something to ease to.
-      const next = pos.get() + normalizeWheel(event, port) / SLOT_PX;
-      pos.jump(next);
-      sample(next);
-      /* While input is arriving the input defines the speed; the integrator
-         only takes the value over once the events stop coming. */
-      vel = velocity();
-      aim = Math.round(next + vel * AIM_PROJECT);
-      run();
+      step(delta > 0 ? 1 : -1);
+      wheelLock = setTimeout(() => {
+        wheelLock = null;
+      }, wheelCooldown(size));
     };
 
-    /* --- Touch ---------------------------------------------------------- */
+    /* --- Pointer -------------------------------------------------------- */
 
-    let dragging = false;
-    let dragId: number | null = null;
-    let dragFrom = 0;
-    let dragPos = 0;
+    /* Pointer events rather than touch events: the reference uses them, and
+       they cost nothing to widen — the same handler gives a mouse the ability
+       to drag the deck, which a touch-only implementation cannot. The pane
+       carries `touch-action: none` in the stylesheet, so a finger's pan is the
+       browser's to give away before the first move arrives. */
+    const drag = {
+      id: null as number | null,
+      x: 0,
+      y: 0,
+      active: false,
+      captured: false,
+      stepped: false
+    };
+    let lastStep = 0;
 
-    const onTouchStart = (event: TouchEvent) => {
-      const touch = event.changedTouches[0];
-      if (!touch) return;
-      stop();
-      driving = false;
-      halt();
-      vel = 0;
-      dragging = true;
-      dragId = touch.identifier;
-      dragFrom = touch.clientY;
-      dragPos = pos.get();
-      aim = Math.round(dragPos);
-      samples = [];
-      sample(dragPos);
+    /* Every pointer-driven step goes through the floor; the keyboard's does
+       not, because a key press is already one deliberate event. */
+    const gated = (direction: 1 | -1) => {
+      const now = performance.now();
+      if (now - lastStep < STEP_FLOOR) return;
+      lastStep = now;
+      drag.stepped = true;
+      step(direction);
     };
 
-    const onTouchMove = (event: TouchEvent) => {
-      if (!dragging) return;
-      const touch = Array.from(event.changedTouches).find((t) => t.identifier === dragId);
-      if (!touch) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      drag.id = event.pointerId;
+      drag.x = event.clientX;
+      drag.y = event.clientY;
+      drag.active = true;
+      drag.captured = false;
+      drag.stepped = false;
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (!drag.active || event.pointerId !== drag.id) return;
+      const dy = event.clientY - drag.y;
+      const dx = event.clientX - drag.x;
+      // A diagonal drag belongs to whichever axis is winning, and a mostly
+      // horizontal one is not for this deck at all.
+      if (Math.abs(dy) <= Math.abs(dx) || Math.abs(dy) < DRAG_STEP) return;
+
+      if (!drag.captured) {
+        try {
+          scroller.setPointerCapture(event.pointerId);
+        } catch {
+          /* The pointer is already gone. The drag still works; it just ends
+             wherever the browser says it does. */
+        }
+        drag.captured = true;
+      }
       event.preventDefault();
-      // 1:1 with the finger: dragging up moves the deck forward.
-      const next = dragPos + (dragFrom - touch.clientY) / SLOT_PX;
-      pos.jump(next);
-      sample(next);
+      gated(dy < 0 ? 1 : -1);
+      // Reset, not accumulate: the next card is 45px from *here*.
+      drag.x = event.clientX;
+      drag.y = event.clientY;
     };
 
-    /* Nothing is decided here. The finger's last speed is handed to the same
-       integrator that has been running all along, and the throw simply carries
-       on into whichever card it runs out on. */
-    const release = () => {
-      if (!dragging) return;
-      dragging = false;
-      dragId = null;
-      vel = velocity();
-      aim = Math.round(pos.get() + vel * AIM_PROJECT);
-      samples = [];
-      run();
+    const onPointerUp = (event: PointerEvent) => {
+      if (!drag.active || event.pointerId !== drag.id) return;
+      if (drag.captured && scroller.hasPointerCapture(event.pointerId)) {
+        scroller.releasePointerCapture(event.pointerId);
+      }
+      if (!drag.stepped) {
+        const dy = event.clientY - drag.y;
+        const dx = event.clientX - drag.x;
+        if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) >= FLICK_MIN) {
+          gated(dy < 0 ? 1 : -1);
+        }
+      }
+      drag.id = null;
+      drag.active = false;
+      drag.captured = false;
+      drag.stepped = false;
     };
 
-    /* --- Targeted moves (dots, keyboard) -------------------------------- */
+    /* --- Targeted moves (dots, Home, End) ------------------------------- */
 
     const goTo = (index: number, immediate = false) => {
-      samples = [];
-      vel = 0;
-      halt();
-      aim = Math.round(pos.get());
       // Shortest way round the loop, so card 11 -> card 0 turns forward by one.
-      const to = pos.get() + wrapOffset(index - pos.get(), count);
-      if (immediate || reduceMotion) {
+      cursor = Math.round(pos.get() + wrapOffset(index - pos.get(), count));
+      if (immediate) {
         stop();
-        driving = false;
-        pos.jump(to);
+        pos.jump(cursor);
         return;
       }
-      driving = true;
-      if (!travel(to, TARGET_BASE, TARGET_PER_CARD, TARGET_MAX)) {
-        /* Already there. Releasing the loop here is not a nicety: `driving`
-           suspends the integrator, and a target that never animates has no
-           `finished` to lower it again — the deck would simply stop responding
-           to the wheel from then on. */
-        driving = false;
-        return;
-      }
-      controls!.finished.then(
-        () => { driving = false; },
-        () => { driving = false; }
-      );
+      /* Not the step spring. A dot may cross the whole ring, and the reference
+         gives every move of that size its one page duration — the same clock a
+         navigation runs on. */
+      chase({ duration: PAGE_S, ease: EASE });
     };
     goToRef.current = goTo;
+
+    /* --- Keyboard ------------------------------------------------------- */
+
+    let lastKey = 0;
 
     const onKeyDown = (event: KeyboardEvent) => {
       const el = event.target as HTMLElement | null;
       if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
-      const here = Math.round(pos.get());
-      const index = ((here % count) + count) % count;
-      /* Wrapped before it is asked for, not after. goTo takes the shortest way
-         round to a card *index*, so handing it `count` is handing it card 0 —
-         the one the deck is already on when index is count-1 — and the arrow
-         key does nothing at the exact moment it is most obviously supposed to
-         work, stepping off the end of the ring. */
-      const step = (n: number) => goTo(((n % count) + count) % count);
+      if (event.repeat) {
+        const now = performance.now();
+        if (now - lastKey < KEY_REPEAT) return;
+        lastKey = now;
+      }
       switch (event.key) {
         case "ArrowDown":
         case "PageDown":
           event.preventDefault();
-          step(index + 1);
+          step(1);
           break;
         case "ArrowUp":
         case "PageUp":
           event.preventDefault();
-          step(index - 1);
+          step(-1);
           break;
         case "Home":
           event.preventDefault();
@@ -387,14 +336,14 @@ export function useVirtualDeck({
       onPosition(pos.get());
     };
 
-    /* preventDefault is the point of both of these, so neither can be passive.
-       They are bound to the pane rather than the window so the rest of the page
-       (the resume link, the theme toggle) keeps ordinary behaviour. */
+    /* preventDefault is the point of the wheel listener, so it cannot be
+       passive. They are bound to the pane rather than the window so the rest of
+       the page (the resume link, the theme toggle) keeps ordinary behaviour. */
     scroller.addEventListener("wheel", onWheel, { passive: false });
-    scroller.addEventListener("touchstart", onTouchStart, { passive: true });
-    scroller.addEventListener("touchmove", onTouchMove, { passive: false });
-    scroller.addEventListener("touchend", release, { passive: true });
-    scroller.addEventListener("touchcancel", release, { passive: true });
+    scroller.addEventListener("pointerdown", onPointerDown, { passive: true });
+    scroller.addEventListener("pointermove", onPointerMove, { passive: false });
+    scroller.addEventListener("pointerup", onPointerUp, { passive: true });
+    scroller.addEventListener("pointercancel", onPointerUp, { passive: true });
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("resize", onResize);
 
@@ -402,13 +351,13 @@ export function useVirtualDeck({
 
     return () => {
       stop();
-      halt();
+      if (wheelLock) clearTimeout(wheelLock);
       unsubscribe();
       scroller.removeEventListener("wheel", onWheel);
-      scroller.removeEventListener("touchstart", onTouchStart);
-      scroller.removeEventListener("touchmove", onTouchMove);
-      scroller.removeEventListener("touchend", release);
-      scroller.removeEventListener("touchcancel", release);
+      scroller.removeEventListener("pointerdown", onPointerDown);
+      scroller.removeEventListener("pointermove", onPointerMove);
+      scroller.removeEventListener("pointerup", onPointerUp);
+      scroller.removeEventListener("pointercancel", onPointerUp);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("resize", onResize);
       goToRef.current = () => {};
