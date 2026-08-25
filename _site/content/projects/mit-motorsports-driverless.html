@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>MIT Motorsports | Leo Sun</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="MIT Motorsports" />
+<meta name="author" content="Leo Sun" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Driverless software and algorithms." />
+<meta property="og:description" content="Driverless software and algorithms." />
+<link rel="canonical" href="http://localhost:4000/content/projects/mit-motorsports-driverless.html" />
+<meta property="og:url" content="http://localhost:4000/content/projects/mit-motorsports-driverless.html" />
+<meta property="og:site_name" content="Leo Sun" />
+<meta property="og:image" content="http://localhost:4000/assets/img/20260526MITMotorsportsDriverless/fsae-rover-testbed.jpg" />
+<meta property="og:image:alt" content="MIT Motorsports FSAE rover testbed" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-05-26T00:00:00-07:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/assets/img/20260526MITMotorsportsDriverless/fsae-rover-testbed.jpg" />
+<meta name="twitter:image:alt" content="MIT Motorsports FSAE rover testbed" />
+<meta property="twitter:title" content="MIT Motorsports" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Leo Sun"},"dateModified":"2026-05-26T00:00:00-07:00","datePublished":"2026-05-26T00:00:00-07:00","description":"Driverless software and algorithms.","headline":"MIT Motorsports","image":{"alt":"MIT Motorsports FSAE rover testbed","url":"http://localhost:4000/assets/img/20260526MITMotorsportsDriverless/fsae-rover-testbed.jpg","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/content/projects/mit-motorsports-driverless.html"},"url":"http://localhost:4000/content/projects/mit-motorsports-driverless.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7b5835a797a13dab8c2a351fb2fdd3abed8017d6">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Leo Sun</a></h1>
+      
+
+      <h2 id="overview">Overview</h2>
+<p>I am working on the driverless software stack for MIT Motorsports’ autonomous racecar. The core challenge is to drive through a Formula SAE autocross-style track defined by blue and yellow cones, keeping the car between the left and right boundaries while planning a fast, stable path forward.</p>
+
+<p>The full vehicle stack is built around an NVIDIA Jetson AGX Orin 64 GB, an Ouster OS1 128-channel LiDAR, three Blackfly cameras, and a VectorNav VN-300 IMU. For day-to-day development and testing, we run the same autonomy stack on a smaller rover testbed before moving onto the racecar. Our long-term goal is to compete in the Driverless Cup at FSAE Michigan 2027.</p>
+
+<p>The autonomy problem is divided into four main subsystems: perception, state estimation, planning, and control.</p>
+
+<hr />
+
+<h2 id="the-stack">The Stack</h2>
+
+<h3 id="perception">Perception</h3>
+<p>Perception currently uses a LiDAR-only cone detection pipeline. Raw Ouster point clouds are filtered to a region of interest, ground points are removed, and the remaining points are clustered in the XY plane using Euclidean/DBSCAN-style clustering. Each cluster is reduced to a cone centroid.</p>
+
+<figure class="project-media project-media--lidar-clustering">
+  <div class="project-media__frame">
+    <video autoplay="" loop="" muted="" playsinline="" preload="metadata" poster="/assets/img/20260526MITMotorsportsDriverless/lidar-clustering-demo-poster.jpg">
+      <source src="/assets/video/20260526MITMotorsportsDriverless/lidar-clustering-demo.mp4" type="video/mp4" />
+    </video>
+  </div>
+  <figcaption>LiDAR clustering demo showing filtered point-cloud clusters reduced into cone detections.</figcaption>
+</figure>
+
+<p>For cone colors, the LiDAR-only classifier builds blue and yellow cone chains using nearest-neighbor ghost-cone seeding, then scores candidate chains with heading and turn-consistency checks. Camera detections and YOLO can be added later to validate or replace LiDAR-only color assignments, but the current direction keeps the pipeline usable even before vision is fully integrated.</p>
+
+<figure class="project-media">
+  <img src="/assets/img/20260526MITMotorsportsDriverless/yolo-cone-detection.jpg" alt="YOLO cone detections on camera footage" />
+  <figcaption>YOLO cone detections used as a vision path for validating blue and yellow cone colors.</figcaption>
+</figure>
+
+<h3 id="state-estimation">State Estimation</h3>
+<p>State estimation uses the <code class="language-plaintext highlighter-rouge">robot_localization</code> EKF package to fuse GPS, ground-speed odometry, and IMU data into a filtered vehicle state. GPS is converted through <code class="language-plaintext highlighter-rouge">navsat_transform_node</code> into <code class="language-plaintext highlighter-rouge">/odometry/gps</code>, the ground-speed sensor provides forward velocity, and the VectorNav IMU contributes yaw-rate and angular motion.</p>
+
+<p>The fused estimate publishes a filtered pose and velocity stream, such as <code class="language-plaintext highlighter-rouge">/odometry/filtered</code>, along with the TF frames needed by planning and control.</p>
+
+<h3 id="planning">Planning</h3>
+<p>Planning consumes the perceived colored cone centroids, transforms them into the planning frame, and filters to nearby cones that matter for the current horizon. If only one side of the track is visible, the planner can create virtual cones to maintain a usable corridor.</p>
+
+<p>From there, it uses Delaunay triangulation to connect cones, takes midpoints between opposite-color cone edges, builds a graph of candidate centerline points, and runs Dijkstra/search to choose the forward path. The selected centerline is smoothed with a spline and published as a <code class="language-plaintext highlighter-rouge">/path</code>.</p>
+
+<figure class="project-media project-media--planning-demo">
+  <div class="project-media__frame">
+    <video autoplay="" loop="" muted="" playsinline="" preload="metadata" poster="/assets/img/20260526MITMotorsportsDriverless/planning-demo-poster.jpg">
+      <source src="/assets/video/20260526MITMotorsportsDriverless/planning-demo.mp4" type="video/mp4" />
+    </video>
+  </div>
+  <figcaption>Planning demo showing cone inputs being converted into a forward centerline.</figcaption>
+</figure>
+
+<h3 id="control">Control</h3>
+<p>Control follows the planned path using the current state estimate and odometry. The stack supports path-tracking approaches such as Pure Pursuit and Stanley: Pure Pursuit selects a lookahead point and computes steering curvature, while Stanley uses cross-track and heading error from EKF odometry.</p>
+
+<p>The controller publishes desired velocity and steering commands, which pass through a command-mux safety gate before reaching the ODrive motor and steering hardware.</p>
+
+<hr />
+
+<h2 id="next-steps">Next Steps</h2>
+<p>The next goals are to reduce loop times, run safely at higher speeds, add SLAM, implement a minimum-curvature racing line, add velocity profiling, and move toward MPC for control.</p>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/lleosunn/lleosunn.github.io/edit/gh-pages/content/projects/mit-motorsports-driverless.md">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

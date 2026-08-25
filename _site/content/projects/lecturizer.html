@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Lecturizer | Leo Sun</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Lecturizer" />
+<meta name="author" content="Leo Sun" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="An AI assistant that transcribes and summarizes lecture audio." />
+<meta property="og:description" content="An AI assistant that transcribes and summarizes lecture audio." />
+<link rel="canonical" href="http://localhost:4000/content/projects/lecturizer.html" />
+<meta property="og:url" content="http://localhost:4000/content/projects/lecturizer.html" />
+<meta property="og:site_name" content="Leo Sun" />
+<meta property="og:image" content="http://localhost:4000/assets/img/20241110Lecturizer/lecturizer.png" />
+<meta property="og:image:alt" content="Lecturizer" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2024-11-01T00:00:00-07:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/assets/img/20241110Lecturizer/lecturizer.png" />
+<meta name="twitter:image:alt" content="Lecturizer" />
+<meta property="twitter:title" content="Lecturizer" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Leo Sun"},"dateModified":"2024-11-01T00:00:00-07:00","datePublished":"2024-11-01T00:00:00-07:00","description":"An AI assistant that transcribes and summarizes lecture audio.","headline":"Lecturizer","image":{"alt":"Lecturizer","url":"http://localhost:4000/assets/img/20241110Lecturizer/lecturizer.png","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/content/projects/lecturizer.html"},"url":"http://localhost:4000/content/projects/lecturizer.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7b5835a797a13dab8c2a351fb2fdd3abed8017d6">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Leo Sun</a></h1>
+      
+
+      <h2 id="overview">Overview</h2>
+<p>Lecturizer is an AI-powered lecture transcription and summarization tool built during WHACK 2024 (Wellesley College Hackathon). It addresses a common student challenge: retaining key information from long, fast-paced lectures. Lecturizer was designed to make lecture review easier by turning raw audio into concise, structured summaries.</p>
+
+<hr />
+
+<h2 id="system--features">System &amp; Features</h2>
+<p>Lecturizer allows users to upload or record lecture audio through a web interface and automatically converts it into summarized text for efficient studying.</p>
+
+<p>Key features:</p>
+<ul>
+  <li>Audio upload and in-browser recording</li>
+  <li>Speech-to-text transcription using OpenAI Whisper</li>
+  <li>Transformer-based summarization using DistilBART</li>
+  <li>Chunking logic to handle long transcripts</li>
+  <li>Support for MP3, WAV, OGG, FLAC, and WebM formats</li>
+  <li>Location-based consent checks to comply with U.S. recording laws</li>
+</ul>
+
+<p>The backend was built in Python with Flask, while the frontend uses HTML, CSS, and JavaScript. The system was validated on 20+ lecture recordings, achieving a ~70% reduction in transcript length while preserving core ideas.</p>
+
+<hr />
+
+<h2 id="challenges--results">Challenges &amp; Results</h2>
+<p>Key challenges included handling recording consent laws and balancing summarization speed with accuracy. These were addressed through a consent disclaimer flow and benchmarking multiple transformer models. The final system provides reliable audio-to-text transcription, fast summarization, robust error handling, and a user-friendly lecture review workflow.</p>
+
+<hr />
+
+<h2 id="demo">Demo</h2>
+<!-- VIDEO: Lecturizer demo -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/fFjoTULvWek" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+<p><em>Demo of Lecturizer transcribing and summarizing lecture audio</em></p>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/lleosunn/lleosunn.github.io/edit/gh-pages/content/projects/lecturizer.md">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

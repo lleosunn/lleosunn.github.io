@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Scorpion | Leo Sun</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Scorpion" />
+<meta name="author" content="Leo Sun" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Competition robot for the FIRST Tech Challenge POWERPLAY (2022–2023)." />
+<meta property="og:description" content="Competition robot for the FIRST Tech Challenge POWERPLAY (2022–2023)." />
+<link rel="canonical" href="http://localhost:4000/content/projects/scorpion.html" />
+<meta property="og:url" content="http://localhost:4000/content/projects/scorpion.html" />
+<meta property="og:site_name" content="Leo Sun" />
+<meta property="og:image" content="http://localhost:4000/assets/img/20230312Scorpion/robot.JPG" />
+<meta property="og:image:alt" content="Scorpion FTC PowerPlay Robot" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-03-01T00:00:00-08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/assets/img/20230312Scorpion/robot.JPG" />
+<meta name="twitter:image:alt" content="Scorpion FTC PowerPlay Robot" />
+<meta property="twitter:title" content="Scorpion" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Leo Sun"},"dateModified":"2023-03-01T00:00:00-08:00","datePublished":"2023-03-01T00:00:00-08:00","description":"Competition robot for the FIRST Tech Challenge POWERPLAY (2022–2023).","headline":"Scorpion","image":{"alt":"Scorpion FTC PowerPlay Robot","url":"http://localhost:4000/assets/img/20230312Scorpion/robot.JPG","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/content/projects/scorpion.html"},"url":"http://localhost:4000/content/projects/scorpion.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7b5835a797a13dab8c2a351fb2fdd3abed8017d6">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Leo Sun</a></h1>
+      
+
+      <h2 id="overview">Overview</h2>
+<p>The POWERPLAY game focused on stacking cones onto poles, rewarding precision, speed, and reliable autonomous behavior. Our objective was to build a robot that could score consistently in autonomous while remaining agile and controllable during tele-op. As team captain, I was heavily involved in both the mechanical design and software development of the robot, contributing the majority of the CAD and programming while coordinating overall system integration.</p>
+
+<hr />
+
+<h2 id="my-role">My Role</h2>
+<ul>
+  <li>Team Captain</li>
+  <li>Primary contributor to:
+    <ul>
+      <li>Robot CAD</li>
+      <li>Autonomous and control software</li>
+      <li>Drivetrain redesign and optimization</li>
+    </ul>
+  </li>
+  <li>Involved in mechanical iteration, sensor integration, and autonomous strategy design</li>
+</ul>
+
+<hr />
+
+<h2 id="mechanical-design--build">Mechanical Design &amp; Build</h2>
+
+<h3 id="drivetrain">Drivetrain</h3>
+<p>The robot used a mecanum drive base to enable omnidirectional movement, which was essential for maneuvering around poles and other robots. Each wheel was driven by an individual motor via belt drive, prioritizing compactness and reliability.</p>
+
+<p>One of my main mechanical contributions was a drivetrain redesign:</p>
+<ul>
+  <li>Reduced the drivetrain footprint by 2 inches in both length and width</li>
+  <li>Improved turning radius and field mobility</li>
+  <li>Enabled tighter alignment around scoring poles</li>
+</ul>
+
+<!-- IMAGE: CAD render of robot -->
+<p><img src="/assets/img/20230312Scorpion/robotcad.png" alt="Scorpion CAD assembly" />
+<em>Full robot CAD model (Onshape)</em></p>
+
+<!-- IMAGE: Old vs new drivetrain comparison -->
+<p><img src="/assets/img/20230312Scorpion/drivetraincomparison.png" alt="Drivetrain comparison" />
+<em>Comparison between original and redesigned drivetrain</em></p>
+
+<hr />
+
+<h3 id="cone-manipulation-system">Cone Manipulation System</h3>
+<p>The cone manipulation system consisted of:</p>
+<ul>
+  <li>A linear slide lift for vertical extension</li>
+  <li>A pivoting arm</li>
+  <li>A rotatable claw for controlled cone intake and placement</li>
+</ul>
+
+<p>The robot was fully CADed in Onshape and built using:</p>
+<ul>
+  <li>GoBilda components</li>
+  <li>CNC-machined aluminum plates</li>
+  <li>Custom 3D-printed parts</li>
+</ul>
+
+<p>This hybrid approach enabled rapid iteration while maintaining structural rigidity where needed.</p>
+
+<hr />
+
+<h2 id="software--autonomous-system">Software &amp; Autonomous System</h2>
+
+<h3 id="localization">Localization</h3>
+<p>Autonomous performance was built on a robust localization system using sensor fusion from:</p>
+<ul>
+  <li>Three odometry pods, providing real-time (x, y, θ)</li>
+  <li>An IMU, used primarily for more accurate heading (θ) estimation</li>
+</ul>
+
+<p>While the odometry pods alone could estimate pose, the IMU significantly improved heading stability over long autonomous runs.</p>
+
+<hr />
+
+<h3 id="waypoint-based-navigation">Waypoint-Based Navigation</h3>
+<p>Using the localization system, I implemented a waypoint navigation framework:</p>
+<ul>
+  <li>Autonomous paths defined as sequences of target (x, y, θ) poses</li>
+  <li>Interpolation between waypoints to generate smooth motion</li>
+  <li>Reusable, field-agnostic autonomous routines</li>
+</ul>
+
+<p>This abstraction allowed rapid iteration on autonomous strategies without modifying low-level control logic.</p>
+
+<!-- VIDEO: Autonomous run -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/RCbgZEup0Ow" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+<p><em>Autonomous run demonstrating waypoint navigation and scoring</em></p>
+
+<hr />
+
+<h3 id="state-management--sensor-feedback">State Management &amp; Sensor Feedback</h3>
+<p>Autonomous behavior was organized using a finite state machine (FSM):</p>
+<ul>
+  <li>States handled navigation, intake, lift positioning, and scoring</li>
+  <li>A distance sensor mounted on the claw detected whether a cone was within reach</li>
+  <li>Sensor feedback triggered state transitions (e.g., intake → lift)</li>
+</ul>
+
+<p>This improved reliability during real match conditions where alignment was imperfect.</p>
+
+<!-- VIDEO: Distance sensor + claw demo -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/4n47-UivsKU" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+<p><em>Distance sensor detecting a cone and triggering claw intake</em></p>
+
+<hr />
+
+<h2 id="results--performance">Results &amp; Performance</h2>
+<ul>
+  <li>Placed 1st in San Diego at the regional level</li>
+  <li>Placed 2nd in California at the state level</li>
+  <li>Ranked 18th worldwide in overall robot performance</li>
+  <li>Demonstrated consistent autonomous navigation and scoring across competitions</li>
+  <li>Maintained reliable cone detection and intake under match conditions</li>
+  <li>Improved field mobility after drivetrain redesign</li>
+</ul>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/lleosunn/lleosunn.github.io/edit/gh-pages/content/projects/scorpion.md">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

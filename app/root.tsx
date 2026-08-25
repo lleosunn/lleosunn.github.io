@@ -21,12 +21,24 @@ export const links: Route.LinksFunction = () => [
   }
 ];
 
-/* Has to run before the first paint, which is why it is inline and not a hook:
-   a theme resolved after hydration flashes the wrong one for a frame. This is
-   the only piece of the old head script that survived the rewrite — the flight
-   guards it also set are gone, because a flight no longer crosses a document
-   boundary and has nothing to guard against. */
-const THEME_SCRIPT = `(function(){var r=document.documentElement;try{var s=localStorage.getItem("theme");r.dataset.theme=s||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch(e){r.dataset.theme="light"}})();`;
+/* Has to run before the first paint, which is why it is inline and not a hook.
+   Both halves are the same argument.
+
+   The theme: one resolved after hydration flashes the wrong one for a frame.
+
+   data-boot: the site is prerendered, so without it the browser paints finished
+   markup — and then hydration seats the deck on top of what was already on
+   screen. CSS hides the panes' contents while the attribute is there and
+   useBootReveal takes it off to play the opening; a class added by React would
+   arrive after the paint it was meant to prevent.
+
+   The timer is the promise that a bundle which never loads still leaves a
+   readable page. It hands over to data-boot-late rather than simply dropping
+   the curtain, so that the one path where the script that owns the opening
+   never ran is still a fade and not a flash — and then clears that too, or the
+   attribute would sit on <html> animating every element a later navigation
+   mounted. */
+const HEAD_SCRIPT = `(function(){var r=document.documentElement;try{var s=localStorage.getItem("theme");r.dataset.theme=s||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch(e){r.dataset.theme="light"}try{if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){r.setAttribute("data-boot","");window.__boot=setTimeout(function(){if(!r.hasAttribute("data-boot"))return;r.setAttribute("data-boot-late","");r.removeAttribute("data-boot");setTimeout(function(){r.removeAttribute("data-boot-late")},900)},2500)}}catch(e){}})();`;
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
@@ -40,7 +52,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="keywords" content={site.keywords.join(", ")} />
         <Meta />
         <Links />
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: HEAD_SCRIPT }} />
       </head>
       <body data-page={pathname === "/" ? "home" : "inner"}>
         {children}

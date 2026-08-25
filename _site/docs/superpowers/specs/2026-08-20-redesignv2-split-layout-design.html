@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>redesignv2 — Split-Pane Portfolio Redesign | Leo Sun</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="redesignv2 — Split-Pane Portfolio Redesign" />
+<meta name="author" content="Leo Sun" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Leo Sun is an MIT Class of 2028 student building robotics, autonomy, and AI systems." />
+<meta property="og:description" content="Leo Sun is an MIT Class of 2028 student building robotics, autonomy, and AI systems." />
+<link rel="canonical" href="http://localhost:4000/docs/superpowers/specs/2026-08-20-redesignv2-split-layout-design.html" />
+<meta property="og:url" content="http://localhost:4000/docs/superpowers/specs/2026-08-20-redesignv2-split-layout-design.html" />
+<meta property="og:site_name" content="Leo Sun" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="redesignv2 — Split-Pane Portfolio Redesign" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"Leo Sun"},"description":"Leo Sun is an MIT Class of 2028 student building robotics, autonomy, and AI systems.","headline":"redesignv2 — Split-Pane Portfolio Redesign","url":"http://localhost:4000/docs/superpowers/specs/2026-08-20-redesignv2-split-layout-design.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7b5835a797a13dab8c2a351fb2fdd3abed8017d6">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Leo Sun</a></h1>
+      
+
+      <h1 id="redesignv2--split-pane-portfolio-redesign">redesignv2 — Split-Pane Portfolio Redesign</h1>
+
+<p><strong>Date:</strong> 2026-08-20
+<strong>Branch:</strong> <code class="language-plaintext highlighter-rouge">redesignv2</code>
+<strong>Status:</strong> Approved design, pending implementation</p>
+
+<h2 id="goal">Goal</h2>
+
+<p>Replace the current 3-column tile gallery with a two-pane layout: a fixed
+identity pane on the left and an independently scrolling column of project
+tiles on the right. Visual direction follows gabrielbeaugonin.com — Swiss
+grayscale, a single font weight, no smooth scrolling.</p>
+
+<h2 id="decisions">Decisions</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Decision</th>
+      <th>Choice</th>
+      <th>Rationale</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Stack</td>
+      <td>Stay on Jekyll</td>
+      <td>Design is ~95% CSS; migration buys little</td>
+    </tr>
+    <tr>
+      <td>Navigation</td>
+      <td>Real page loads + View Transitions</td>
+      <td>Cross-fade polish, no router to own</td>
+    </tr>
+    <tr>
+      <td>Font</td>
+      <td>Inter, self-hosted</td>
+      <td>Suisse Int’l is commercially licensed; cannot rehost</td>
+    </tr>
+    <tr>
+      <td>Weights</td>
+      <td>400 only</td>
+      <td>Matches reference discipline; hierarchy via size + gray</td>
+    </tr>
+    <tr>
+      <td>Dots</td>
+      <td>Home page only, one per project</td>
+      <td>Explicit user choice</td>
+    </tr>
+    <tr>
+      <td>Left pane</td>
+      <td>Name + tagline + icons, nothing else</td>
+      <td>Maximum restraint</td>
+    </tr>
+    <tr>
+      <td>Icon row</td>
+      <td>Left pane, under the tagline (desktop)</td>
+      <td>Explicit user choice</td>
+    </tr>
+    <tr>
+      <td>Mobile</td>
+      <td>Fixed top identity, scrolling tiles, fixed bottom icons</td>
+      <td>Explicit user choice</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="palette">Palette</h2>
+
+<p>Grayscale in both themes. Values derived from the reference site.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Light                       Dark
+--bg:      #ffffff          --bg:      #0a0a0a
+--surface: #f6f6f6          --surface: #1a1a1a
+--text:    #0a0a0a          --text:    #ffffff
+--muted:   #9f9f9f          --muted:   #9f9f9f
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">--muted</code> is deliberately identical across themes — it passes contrast on both
+grounds and keeps secondary text consistent.</p>
+
+<h2 id="layout">Layout</h2>
+
+<h3 id="desktop--900px">Desktop (&gt;= 900px)</h3>
+
+<p>The page shell is exactly viewport-height and never scrolls. Only the right
+pane scrolls.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+-----------------------+--------------------------------+---+
+|                       |                                | o |
+|  Leo Sun              |   [ project tile ]             | o |
+|  MIT Class of 2028    |   Title      description       | * |
+|                       |                                | o |
+|  [home][in][gh]       |   [ project tile ]             | o |
+|  [cv][theme]          |   Title      description       | o |
+|                       |                                |   |
++-----------------------+--------------------------------+---+
+   fixed, does not scroll    overflow-y: auto            dots
+</code></pre></div></div>
+
+<ul>
+  <li>Shell: <code class="language-plaintext highlighter-rouge">height: 100dvh; overflow: hidden</code>, CSS grid <code class="language-plaintext highlighter-rouge">[left] [right]</code></li>
+  <li>Left pane fixed width, <code class="language-plaintext highlighter-rouge">clamp(300px, 30vw, 420px)</code></li>
+  <li>Right pane <code class="language-plaintext highlighter-rouge">overflow-y: auto</code>, holds the scrolling content</li>
+  <li>Dots fixed to the right edge, vertically centered, home page only</li>
+</ul>
+
+<h3 id="mobile--900px">Mobile (&lt; 900px)</h3>
+
+<p>Three zones on a <code class="language-plaintext highlighter-rouge">100dvh</code> grid of <code class="language-plaintext highlighter-rouge">auto 1fr auto</code>. The tiles are the only
+scrolling region; identity and icons stay pinned.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+-------------------------------+
+| Leo Sun                       |  fixed
+| MIT Class of 2028             |
++-------------------------------+
+|   [ project tile ]            |  scrolls
+|   [ project tile ]            |
++-------------------------------+
+| [home] [in] [gh] [cv] [theme] |  fixed
++-------------------------------+
+</code></pre></div></div>
+
+<p>Dots hide below 900px.</p>
+
+<h2 id="left-pane-is-context-dependent">Left pane is context-dependent</h2>
+
+<p>The same region renders different content per page type. This is the core
+structural idea — one layout slot, three sources.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Page</th>
+      <th>Line 1</th>
+      <th>Line 2</th>
+      <th>Line 3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Home</td>
+      <td><code class="language-plaintext highlighter-rouge">site.title</code></td>
+      <td><code class="language-plaintext highlighter-rouge">site.tagline</code></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>Project</td>
+      <td><code class="language-plaintext highlighter-rouge">page.title</code></td>
+      <td><code class="language-plaintext highlighter-rouge">page.description</code></td>
+      <td><code class="language-plaintext highlighter-rouge">page.years</code></td>
+    </tr>
+    <tr>
+      <td>Resume/page</td>
+      <td><code class="language-plaintext highlighter-rouge">page.title</code></td>
+      <td><code class="language-plaintext highlighter-rouge">page.description</code></td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Implemented in <code class="language-plaintext highlighter-rouge">_layouts/default.html</code> by capturing the three values, with
+each child layout overriding them. No duplication across layouts.</p>
+
+<h2 id="project-tiles">Project tiles</h2>
+
+<p>Single column, one tile per row, full width of the right pane. Image on top
+with an 8px radius; below it the title in <code class="language-plaintext highlighter-rouge">--text</code> and the description in
+<code class="language-plaintext highlighter-rouge">--muted</code>. Text sits below the image rather than overlaying it — overlay text
+needs scrims and bold weights, which fight the single-weight grayscale
+direction.</p>
+
+<p>Source stays <code class="language-plaintext highlighter-rouge">preview_image.path</code> falling back to <code class="language-plaintext highlighter-rouge">image.path</code>, ordered by
+<code class="language-plaintext highlighter-rouge">tile_order</code>, skipping <code class="language-plaintext highlighter-rouge">display: false</code>. No front-matter changes needed.</p>
+
+<p>The per-project <code class="language-plaintext highlighter-rouge">object-position</code> hacks currently in <code class="language-plaintext highlighter-rouge">main.css</code>
+(<code class="language-plaintext highlighter-rouge">.project-tile--mit-motorsports-driverless</code> etc.) move into optional
+front matter so the stylesheet stops knowing project names:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">preview_image</span><span class="pi">:</span>
+  <span class="na">path</span><span class="pi">:</span> <span class="s">...</span>
+  <span class="na">position</span><span class="pi">:</span> <span class="s2">"</span><span class="s">40%</span><span class="nv"> </span><span class="s">center"</span>   <span class="c1"># optional</span>
+</code></pre></div></div>
+
+<h2 id="dots">Dots</h2>
+
+<ul>
+  <li>One dot per visible project, rendered on the home page only</li>
+  <li><code class="language-plaintext highlighter-rouge">IntersectionObserver</code> on the tiles sets the active dot</li>
+  <li>Clicking a dot jumps to that tile instantly (no smooth behavior)</li>
+  <li><code class="language-plaintext highlighter-rouge">aria-label</code> per dot with the project title; the strip is <code class="language-plaintext highlighter-rouge">role="navigation"</code></li>
+</ul>
+
+<h2 id="scroll-behavior">Scroll behavior</h2>
+
+<p>Smooth scrolling is removed globally — <code class="language-plaintext highlighter-rouge">scroll-behavior: smooth</code> comes out of
+<code class="language-plaintext highlighter-rouge">html</code>, and all programmatic scrolls use the default instant behavior.</p>
+
+<p>Returning home via the home icon restores the previous tile-scroll position.
+The right pane’s <code class="language-plaintext highlighter-rouge">scrollTop</code> is written to <code class="language-plaintext highlighter-rouge">sessionStorage</code> on navigation away
+from home and restored on load. Roughly ten lines; not tied to the navigation
+choice.</p>
+
+<h2 id="view-transitions">View Transitions</h2>
+
+<div class="language-css highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@view-transition</span> <span class="p">{</span> <span class="py">navigation</span><span class="p">:</span> <span class="nb">auto</span><span class="p">;</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>The left pane and right pane get distinct <code class="language-plaintext highlighter-rouge">view-transition-name</code> values so the
+identity block cross-fades while the content pane fades independently.
+Unsupported browsers get an ordinary page load. Wrapped in a
+<code class="language-plaintext highlighter-rouge">prefers-reduced-motion: no-preference</code> guard.</p>
+
+<h2 id="icons">Icons</h2>
+
+<p>FontAwesome is currently loaded in full for five glyphs. It is replaced by
+inline SVG in a new <code class="language-plaintext highlighter-rouge">_includes/icons.html</code>, removing a render-blocking
+stylesheet and the <code class="language-plaintext highlighter-rouge">assets/lib/fontawesome-free</code> dependency from the critical
+path.</p>
+
+<p>Icons: home, LinkedIn, GitHub, resume, theme toggle. <code class="language-plaintext highlighter-rouge">resume.html</code> also uses
+<code class="language-plaintext highlighter-rouge">fa-file-pdf</code> for its download link, so it converts to the same include —
+otherwise removing the FontAwesome stylesheet leaves a blank glyph there.</p>
+
+<p>Verified: FontAwesome is 1.1 MB serving six glyphs total.</p>
+
+<h2 id="files">Files</h2>
+
+<p><strong>Rewritten</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">_layouts/default.html</code> — shell grid, left pane, right pane, icons, dots</li>
+  <li><code class="language-plaintext highlighter-rouge">_layouts/home.html</code> — tile column</li>
+  <li><code class="language-plaintext highlighter-rouge">_layouts/post.html</code> — project content into right pane</li>
+  <li><code class="language-plaintext highlighter-rouge">_layouts/page.html</code> — resume and simple pages</li>
+  <li><code class="language-plaintext highlighter-rouge">assets/css/main.css</code> — full rewrite against the new token set</li>
+</ul>
+
+<p><strong>New</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">_includes/icons.html</code> — inline SVG sprite</li>
+  <li><code class="language-plaintext highlighter-rouge">assets/js/nav.js</code> — dots, scroll restoration</li>
+  <li><code class="language-plaintext highlighter-rouge">assets/fonts/</code> — self-hosted Inter woff2 (OFL-1.1)</li>
+</ul>
+
+<p><strong>Unchanged</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">assets/js/theme.js</code> — already correct</li>
+  <li><code class="language-plaintext highlighter-rouge">_includes/seo.html</code>, <code class="language-plaintext highlighter-rouge">metadata-hook.html</code></li>
+  <li>All 11 posts, except optional <code class="language-plaintext highlighter-rouge">preview_image.position</code> additions</li>
+</ul>
+
+<p><strong>Removed</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">_tabs/resume.md</code> — verified dead: <code class="language-plaintext highlighter-rouge">_tabs</code> is not a declared collection in
+<code class="language-plaintext highlighter-rouge">_config.yml</code>, so Jekyll never builds it. <code class="language-plaintext highlighter-rouge">/resume/</code> comes from <code class="language-plaintext highlighter-rouge">resume.html</code>.</li>
+  <li>FontAwesome <code class="language-plaintext highlighter-rouge">&lt;link&gt;</code> from the critical path</li>
+</ul>
+
+<h2 id="out-of-scope">Out of scope</h2>
+
+<p>Content rewrites, new pages, project-page internal redesign beyond fitting the
+right pane, and image optimization.</p>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/lleosunn/lleosunn.github.io/edit/gh-pages/docs/superpowers/specs/2026-08-20-redesignv2-split-layout-design.md">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

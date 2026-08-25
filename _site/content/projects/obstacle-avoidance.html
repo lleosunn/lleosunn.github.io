@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Obstacle Avoidance | Leo Sun</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Obstacle Avoidance" />
+<meta name="author" content="Leo Sun" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Safe autonomous navigation of ground robots using depth sensing." />
+<meta property="og:description" content="Safe autonomous navigation of ground robots using depth sensing." />
+<link rel="canonical" href="http://localhost:4000/content/projects/obstacle-avoidance.html" />
+<meta property="og:url" content="http://localhost:4000/content/projects/obstacle-avoidance.html" />
+<meta property="og:site_name" content="Leo Sun" />
+<meta property="og:image" content="http://localhost:4000/assets/img/20230815UCSD/pybullet.png" />
+<meta property="og:image:alt" content="Obstacle Avoidance" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-08-01T00:00:00-07:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/assets/img/20230815UCSD/pybullet.png" />
+<meta name="twitter:image:alt" content="Obstacle Avoidance" />
+<meta property="twitter:title" content="Obstacle Avoidance" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Leo Sun"},"dateModified":"2023-08-01T00:00:00-07:00","datePublished":"2023-08-01T00:00:00-07:00","description":"Safe autonomous navigation of ground robots using depth sensing.","headline":"Obstacle Avoidance","image":{"alt":"Obstacle Avoidance","url":"http://localhost:4000/assets/img/20230815UCSD/pybullet.png","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/content/projects/obstacle-avoidance.html"},"url":"http://localhost:4000/content/projects/obstacle-avoidance.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7b5835a797a13dab8c2a351fb2fdd3abed8017d6">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Leo Sun</a></h1>
+      
+
+      <h2 id="overview">Overview</h2>
+<p>Obstacle avoidance is a core capability for autonomous robots operating in real-world environments. Applications range from hospital robots navigating crowded hallways, to indoor delivery and cleaning systems, to autonomous vehicles and search-and-rescue platforms operating in hazardous conditions.</p>
+
+<p>This project focuses on developing and evaluating depth-camera–based obstacle avoidance algorithms for ground robots. Our goal was to explore how different perception and planning pipelines affect safety and performance, and to understand the tradeoffs between local reactive methods and global planning approaches.</p>
+
+<hr />
+
+<h2 id="problem-setup">Problem Setup</h2>
+<p>The robot operates in a simulated environment built using PyBullet, consisting of:</p>
+<ul>
+  <li>An empty plane</li>
+  <li>Randomly generated cylindrical obstacles</li>
+</ul>
+
+<p>The robot follows a standard Ackermann drive model, parameterized by:</p>
+<ul>
+  <li>Position and orientation</li>
+  <li>Steering angle</li>
+  <li>Linear velocity</li>
+</ul>
+
+<p>A forward-facing depth camera provides distance measurements to obstacles directly ahead. The objective is to navigate safely around obstacles while maintaining a reasonable speed.</p>
+
+<p>Performance is evaluated using:</p>
+<ul>
+  <li>Average distance traveled without collision</li>
+  <li>Average speed</li>
+</ul>
+
+<hr />
+
+<h2 id="method-1-planning-based-obstacle-avoidance">Method 1: Planning-Based Obstacle Avoidance</h2>
+
+<h3 id="perception-pipeline">Perception Pipeline</h3>
+<p>The planning-based approach follows a multi-stage pipeline:</p>
+<ol>
+  <li>Receive depth images from the camera</li>
+  <li>Convert depth images into a 3D point cloud</li>
+  <li>Project the point cloud into a 2D occupancy map</li>
+  <li>Inflate obstacles in the map to maintain safe clearance</li>
+  <li>Use A* to plan a collision-free path</li>
+</ol>
+
+<!-- IMAGE: Depth image, Point cloud, 2D map side by side -->
+<div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 1rem; align-items: flex-start;">
+  <figure style="text-align: center; margin: 0;">
+    <img src="/assets/img/20230815UCSD/depthimage.png" alt="Depth image" style="height: 180px; width: auto;" />
+    <figcaption class="text-center pt-2 pb-2">Depth image</figcaption>
+  </figure>
+  <figure style="text-align: center; margin: 0;">
+    <img src="/assets/img/20230815UCSD/pointcloud.png" alt="Point cloud" style="height: 180px; width: auto;" />
+    <figcaption class="text-center pt-2 pb-2">Point cloud</figcaption>
+  </figure>
+  <figure style="text-align: center; margin: 0;">
+    <img src="/assets/img/20230815UCSD/2dmap.png" alt="2D map" style="height: 180px; width: auto;" />
+    <figcaption class="text-center pt-2 pb-2">2D occupancy map</figcaption>
+  </figure>
+</div>
+
+<!-- GIF: A* planning -->
+<p><img src="/assets/img/20230815UCSD/astar.gif" alt="A* planning GIF" />
+<em>A* path planning with inflated obstacles</em></p>
+
+<hr />
+
+<h3 id="path-following">Path Following</h3>
+<p>Once a path is generated:</p>
+<ul>
+  <li>The robot follows it using a P controller</li>
+  <li>The controller steers the robot toward successive waypoints</li>
+  <li>Velocity is held constant during execution</li>
+</ul>
+
+<p>This approach emphasizes global structure and explicit safety margins but depends heavily on map accuracy.</p>
+
+<hr />
+
+<h2 id="method-2-local-reactive-obstacle-avoidance">Method 2: Local Reactive Obstacle Avoidance</h2>
+<p>We also implemented a simpler, purely reactive method that does not rely on mapping or global planning.</p>
+
+<h3 id="depth-based-steering">Depth-Based Steering</h3>
+<ul>
+  <li>The depth image is split into left and right halves</li>
+  <li>Depth values in each half are summed</li>
+  <li>The robot steers toward the side with greater free space (larger depth sum)</li>
+</ul>
+
+<p>This approach is lightweight, fast, and avoids errors introduced by imperfect mapping.</p>
+
+<hr />
+
+<h2 id="optimal-target-selection">Optimal Target Selection</h2>
+<p>To improve steering behavior, we computed an optimal target direction by:</p>
+<ul>
+  <li>Identifying gaps large enough for the robot to pass through</li>
+  <li>Selecting the gap closest to the robot’s current trajectory</li>
+  <li>Minimizing unnecessary lateral movement</li>
+</ul>
+
+<!-- IMAGE: Optimal target calculation -->
+<p><img src="/assets/img/20230815UCSD/optimaltarget.png" alt="Optimal target placeholder" />
+<em>Selection of optimal target gap for navigation</em></p>
+
+<hr />
+
+<h2 id="results--evaluation">Results &amp; Evaluation</h2>
+<p>Each algorithm was tested over 20 independent trials.</p>
+
+<h3 id="performance-metrics">Performance Metrics</h3>
+
+<p>Local Reactive Avoidance</p>
+<ul>
+  <li>Average distance traveled without collision: 19.56 m</li>
+  <li>Average speed: 0.52 m/s</li>
+</ul>
+
+<p>Planning + Local Avoidance</p>
+<ul>
+  <li>Average distance traveled without collision: 13.33 m</li>
+  <li>Average speed: 0.29 m/s</li>
+</ul>
+
+<!-- IMAGE: Results graph -->
+<p><img src="/assets/img/20230815UCSD/results.png" alt="Results graph placeholder" />
+<em>Comparison of performance with and without planning</em></p>
+
+<p>Surprisingly, the local-only method outperformed the combined planning approach. We believe this is primarily due to map inaccuracies caused by PyBullet camera intrinsics, which made it difficult to construct a perfectly accurate local map. These inaccuracies occasionally caused collisions despite planned paths.</p>
+
+<hr />
+
+<h2 id="discussion">Discussion</h2>
+<p>This project highlights an important insight in robotics:</p>
+<blockquote>
+  <p>More complex pipelines do not always lead to better real-world performance.</p>
+</blockquote>
+
+<p>While planning-based approaches provide structure and interpretability, they are sensitive to perception errors. In contrast, simple reactive methods can be more robust when sensing is noisy or imperfect.</p>
+
+<hr />
+
+<h2 id="future-work">Future Work</h2>
+<p>Potential directions for improvement include:</p>
+<ul>
+  <li>Improved map accuracy through better camera calibration and higher-resolution maps</li>
+  <li>Advanced path-following controllers, such as Pure Pursuit combined with PID control</li>
+  <li>Adaptive velocity control that slows near obstacles and accelerates on clear paths</li>
+  <li>Dynamic environments with moving obstacles of varying shapes and speeds</li>
+</ul>
+
+<hr />
+
+<h2 id="demo">Demo</h2>
+
+<!-- VIDEO: Full demo video -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/sip1lFOLpFY" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+<p><em>Full demonstration of obstacle avoidance behaviors</em></p>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/lleosunn/lleosunn.github.io/edit/gh-pages/content/projects/obstacle-avoidance.md">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

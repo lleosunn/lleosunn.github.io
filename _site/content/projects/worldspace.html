@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Worldspace | Leo Sun</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Worldspace" />
+<meta name="author" content="Leo Sun" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Haptic robotic arm for excavator operation." />
+<meta property="og:description" content="Haptic robotic arm for excavator operation." />
+<link rel="canonical" href="http://localhost:4000/content/projects/worldspace.html" />
+<meta property="og:url" content="http://localhost:4000/content/projects/worldspace.html" />
+<meta property="og:site_name" content="Leo Sun" />
+<meta property="og:image" content="http://localhost:4000/assets/img/20250202Worldspace/worldspace.png" />
+<meta property="og:image:alt" content="Worldspace" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-02-01T00:00:00-08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/assets/img/20250202Worldspace/worldspace.png" />
+<meta name="twitter:image:alt" content="Worldspace" />
+<meta property="twitter:title" content="Worldspace" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Leo Sun"},"dateModified":"2025-02-01T00:00:00-08:00","datePublished":"2025-02-01T00:00:00-08:00","description":"Haptic robotic arm for excavator operation.","headline":"Worldspace","image":{"alt":"Worldspace","url":"http://localhost:4000/assets/img/20250202Worldspace/worldspace.png","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/content/projects/worldspace.html"},"url":"http://localhost:4000/content/projects/worldspace.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7b5835a797a13dab8c2a351fb2fdd3abed8017d6">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Leo Sun</a></h1>
+      
+
+      <h2 id="overview">Overview</h2>
+<p>Worldspace is a haptic robotic arm interface designed to mimic the kinematics and proportions of an excavator. It was used as the primary hardware platform in a research study investigating <em>The Effects of Haptic Feedback and Guidance in the Learning and Operation of Excavators</em>. The project studies how haptic feedback influences learning efficiency, control precision, and physical exertion when operating excavators through a robotic arm interface. I contributed across human-subject experimentation, mechanical design, and real-time kinematics visualization, supporting both the research and system development aspects of the project.</p>
+
+<hr />
+
+<h2 id="research--experimental-setup">Research &amp; Experimental Setup</h2>
+<p>We conducted controlled user studies comparing excavator operation across four experimental conditions to isolate the effects of both interface type and haptic feedback.</p>
+
+<p>The four experimental groups were:</p>
+<ul>
+  <li>Joystick control with haptic feedback</li>
+  <li>Joystick control without haptic feedback</li>
+  <li>Worldspace robotic arm with haptic feedback</li>
+  <li>Worldspace robotic arm without haptic feedback</li>
+</ul>
+
+<p>My contributions included:</p>
+<ul>
+  <li>Recruiting and assisting participants during experiments</li>
+  <li>Running and supervising 36+ hours of training simulations</li>
+  <li>Setting up Unity-based excavation tasks and logging performance data</li>
+</ul>
+
+<p>Results showed a ~50% reduction in operator force exertion when haptic feedback was enabled, particularly when using the Worldspace interface, indicating improved ergonomics and control efficiency.</p>
+
+<hr />
+
+<h2 id="mechanical-design--safety-improvements">Mechanical Design &amp; Safety Improvements</h2>
+
+<h3 id="wire-organizer-redesign">Wire Organizer Redesign</h3>
+<p>One major mechanical contribution was redesigning a wire organizer that also functioned as a mechanical stop for the robotic arm.</p>
+
+<p>The original design:</p>
+<ul>
+  <li>Frequently broke under stress</li>
+  <li>Required unplugging and rethreading all wires to replace</li>
+</ul>
+
+<p>I designed a new slot-based wire organizer that:</p>
+<ul>
+  <li>Allowed wires to be routed without disconnecting</li>
+  <li>Greatly reduced replacement time</li>
+  <li>Improved durability and maintainability<br />
+This resulted in a 75%+ reduction in maintenance time.</li>
+</ul>
+
+<!-- IMAGE: Broken original wire organizer -->
+<p><img src="/assets/img/20250202Worldspace/brokenwireorganizer.jpeg" alt="Broken wire organizer" />
+<em>Original wire organizer that frequently failed under mechanical stress</em></p>
+
+<!-- IMAGE: Before and after wire organizer -->
+<p><img src="/assets/img/20250202Worldspace/newwireorganizer.jpeg" alt="Wire organizer before and after" />
+<em>Redesigned slot-based wire organizer enabling faster maintenance and improved durability</em></p>
+
+<hr />
+
+<h3 id="gripper-safety-structure">Gripper Safety Structure</h3>
+<p>Another safety-focused improvement addressed a finger injury risk in the gripper mechanism.</p>
+
+<p>Originally:</p>
+<ul>
+  <li>An exposed gap posed a risk of finger injury during operation</li>
+</ul>
+
+<p>I designed a fan-like protective structure that:</p>
+<ul>
+  <li>Expands and contracts with the gripper</li>
+  <li>Protects 3 out of 4 fingers during operation</li>
+  <li>Significantly improves user safety compared to the original design</li>
+</ul>
+
+<!-- IMAGE: Exposed gripper gap -->
+<p><img src="/assets/img/20250202Worldspace/grippergap.jpeg" alt="Gripper gap" />
+<em>Exposed gap in the original gripper design presenting a finger injury risk</em></p>
+
+<!-- VIDEO: Fan-like safety mechanism -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/DuPrVi4fDUE" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+<p><em>Fan-like safety structure during gripper operation</em></p>
+
+<hr />
+
+<h2 id="kinematics--real-time-visualization">Kinematics &amp; Real-Time Visualization</h2>
+<p>I implemented real-time forward kinematics for the 4-DOF robotic arm to track joint positions and the excavator bucket tip in 3D space.</p>
+
+<p>This work involved:</p>
+<ul>
+  <li>Computing 3D forward kinematics for each joint</li>
+  <li>Mapping bucket tip position for environment interaction</li>
+  <li>Enabling physics-based simulation such as soil dragging with haptic feedback</li>
+</ul>
+
+<p>Technologies used:</p>
+<ul>
+  <li>Python + Matplotlib for real-time visualization</li>
+  <li>C++ and Unity for interactive simulation</li>
+</ul>
+
+<!-- IMAGE: Forward kinematics math -->
+<p><img src="/assets/img/20250202Worldspace/fkmath.png" alt="Forward kinematics math" />
+<em>Forward kinematics equations used to compute joint positions and excavator bucket tip location</em></p>
+
+<!-- VIDEO: Forward kinematics in Matplotlib -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/jHiDDrZGDFw" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+<p><em>Real-time forward kinematics visualization in Matplotlib</em></p>
+
+<!-- VIDEO: Forward kinematics in Unity -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/DOlMfPjqpgM" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+<p><em>Real-time forward kinematics visualization in Unity</em></p>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/lleosunn/lleosunn.github.io/edit/gh-pages/content/projects/worldspace.md">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

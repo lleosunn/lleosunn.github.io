@@ -5,24 +5,34 @@ import { useEffect, type RefObject } from "react";
  * This used to be the hard part. The two ends of the flight lived in different
  * documents, so the source geometry had to be written to sessionStorage, read
  * back by whatever loaded next, and matched against a destination that might
- * not have finished downloading — with a 400ms deadline after which the whole
- * thing was abandoned for a plain fade.
+ * not have finished downloading. None of that is true any more: both elements
+ * are in the same document, a module-level variable carries the rectangle
+ * across, and the flight is an ordinary FLIP.
  *
- * None of that is true any more. Both elements are in the same document, a
- * module-level variable carries the rectangle across, and the flight is an
- * ordinary FLIP.
+ * What changed with the transition rewrite is *when* the travelling copy is
+ * made. It used to be built on arrival, which was fine while a click navigated
+ * instantly — but the page now spends a couple of hundred milliseconds leaving
+ * first, and during that time the card the user clicked was still an ordinary
+ * child of .shell, fading out with everything else. So the copy is lifted at
+ * click time instead. It is pinned to the viewport outside .shell, which is
+ * what lets the whole page clear out from under it while it holds perfectly
+ * still — the subject of the navigation never blinks.
  *
  * The scale is uniform, always: a photo stretched between a near-square card
  * and a wide banner is the one thing that gives a morph away. The two boxes
  * rarely share an aspect ratio, and that difference is taken up by a clip
  * instead — at the start the flyer is masked to the source's shape, and the
  * mask opens as it travels. Nothing inside is distorted; the window onto it
- * widens. The corner radius rides in the same clip, divided by the scale so it
- * reads at the source's radius on the first frame. */
+ * widens. */
 
 const ENTER_MS = 600;
 const LAND_MS = 180;
 const EASE = "cubic-bezier(0.075, 0.82, 0.165, 1)";
+
+/* A flyer whose navigation never happened would otherwise sit over the page
+   forever. Long enough to cover an exit plus a slow route, short enough that a
+   cancelled click cleans itself up before it is noticed. */
+const ORPHAN_MS = 2500;
 
 export interface Shot {
   src: string;
@@ -34,7 +44,13 @@ export interface Shot {
   position: string;
 }
 
-let pending: Shot | null = null;
+interface Pending {
+  shot: Shot;
+  node: HTMLImageElement;
+  orphan: ReturnType<typeof setTimeout>;
+}
+
+let pending: Pending | null = null;
 
 function capture(el: Element | null | undefined): Shot | null {
   if (!el) return null;
@@ -62,17 +78,6 @@ function capture(el: Element | null | undefined): Shot | null {
   };
 }
 
-/* Called on the click that starts a navigation, before React has torn anything
-   down. Silently does nothing if there is no image to hand over. */
-export function hasPendingHero() {
-  return pending !== null;
-}
-
-export function captureHero(el: Element | null | undefined) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  pending = capture(el);
-}
-
 function makeFlyer(shot: Shot) {
   const img = document.createElement("img");
   img.className = "hero-fly";
@@ -86,7 +91,51 @@ function makeFlyer(shot: Shot) {
   return img;
 }
 
-function fly(shot: Shot, target: HTMLElement) {
+/* True from the moment an arriving route claims the flight until that flight
+   has landed or given up.
+
+   `pending` cannot answer this on its own. The claim happens in the arriving
+   route's effect, and React runs a child route's effects before its parent
+   layout's — so by the time usePageEnter asks, the flight has already been
+   taken and `pending` is null again. The question it is actually asking is not
+   "is a flight waiting" but "is this a page a flight is arriving on", and only
+   a flag that outlives the claim can answer that. Without it every arrival
+   lifted its hero 28px underneath the copy that was landing on it. */
+let airborne = false;
+
+export function hasPendingHero() {
+  return pending !== null || airborne;
+}
+
+export function discardHero() {
+  if (!pending) return;
+  clearTimeout(pending.orphan);
+  pending.node.remove();
+  pending = null;
+}
+
+/* Called on the click that starts a navigation, before React has torn anything
+   down. Silently does nothing if there is no image to hand over. */
+export function captureHero(el: Element | null | undefined) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  discardHero();
+  const shot = capture(el);
+  if (!shot) return;
+
+  /* Standing exactly where the source is, so the swap from real card to copy
+     is not visible even though it happens on the click itself. */
+  const node = makeFlyer(shot);
+  node.style.top = `${shot.top}px`;
+  node.style.left = `${shot.left}px`;
+  node.style.width = `${shot.width}px`;
+  node.style.height = `${shot.height}px`;
+  node.style.borderRadius = `${shot.radius}px`;
+  document.body.appendChild(node);
+
+  pending = { shot, node, orphan: setTimeout(discardHero, ORPHAN_MS) };
+}
+
+function fly(shot: Shot, node: HTMLImageElement, target: HTMLElement) {
   const to = target.getBoundingClientRect();
   if (!to.width || !to.height) return null;
 
@@ -97,14 +146,17 @@ function fly(shot: Shot, target: HTMLElement) {
   const dy = shot.top - to.top - scale * insetY;
   const endRadius = parseFloat(getComputedStyle(target).borderTopLeftRadius) || 0;
 
-  const flyer = makeFlyer(shot);
-  flyer.style.top = `${to.top}px`;
-  flyer.style.left = `${to.left}px`;
-  flyer.style.width = `${to.width}px`;
-  flyer.style.height = `${to.height}px`;
-  document.body.appendChild(flyer);
+  /* Re-seated onto the destination's box. The transform in the first keyframe
+     puts it back exactly where it is standing now, so this costs no visible
+     frame — and the corner moves from border-radius to the clip, which is what
+     carries it for the rest of the trip. */
+  node.style.top = `${to.top}px`;
+  node.style.left = `${to.left}px`;
+  node.style.width = `${to.width}px`;
+  node.style.height = `${to.height}px`;
+  node.style.borderRadius = "";
 
-  const animation = flyer.animate(
+  const animation = node.animate(
     [
       {
         transform: `translate(${dx}px, ${dy}px) scale(${scale})`,
@@ -115,18 +167,21 @@ function fly(shot: Shot, target: HTMLElement) {
     { duration: ENTER_MS, easing: EASE, fill: "both" }
   );
 
-  return { node: flyer, animation };
+  return { node, animation };
 }
 
 /* Runs on the arriving page. `getTarget` is deferred because the element it
    names is rendered by the route that just mounted. */
 export function useHeroLanding(getTarget: () => HTMLElement | null, key: string) {
   useEffect(() => {
-    const shot = pending;
+    const claimed = pending;
+    if (!claimed) return;
+    clearTimeout(claimed.orphan);
     pending = null;
-    if (!shot) return;
+    airborne = true;
 
     let cancelled = false;
+    let landed = false;
     let cleanup: (() => void) | null = null;
 
     /* A project's hero is `height: auto`, so its box is not a measurement until
@@ -145,8 +200,12 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
     };
 
     const land = (target: HTMLElement) => {
-      const flight = fly(shot, target);
-      if (!flight) return;
+      const flight = fly(claimed.shot, claimed.node, target);
+      if (!flight) {
+        airborne = false;
+        return claimed.node.remove();
+      }
+      landed = true;
 
       // Hidden before the flyer is visible, so the destination is never briefly
       // showing underneath its own copy.
@@ -155,6 +214,7 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
       const reveal = () => {
         target.style.visibility = "";
         flight.node.remove();
+        airborne = false;
       };
 
       /* A flight aims at where its destination is standing now. Scroll the pane
@@ -187,20 +247,43 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
     };
 
     /* The wait is capped. Past a few hundred milliseconds the flight has missed
-       its moment and a plain cut reads better than a late morph. */
+       its moment and a plain cut reads better than a late morph — but the copy
+       has to go either way, or it is left standing over the page it failed to
+       land on. */
     const deadline = performance.now() + 400;
     const attempt = () => {
       if (cancelled) return;
       const target = getTarget();
       if (target && measurable(target)) return land(target);
-      if (performance.now() > deadline) return;
+      if (performance.now() > deadline) {
+        airborne = false;
+        return claimed.node.remove();
+      }
       requestAnimationFrame(attempt);
     };
-    attempt();
+    /* Deliberately not called synchronously. StrictMode runs this effect,
+       tears it down, and runs it again — all before a frame is painted — so an
+       attempt that could succeed on the spot would have its flight cancelled by
+       that teardown and leave the second run with nothing to fly. A frame's
+       delay puts every landing after the teardown, where the restore below can
+       hand the flight to whichever run is the real one. */
+    const first = requestAnimationFrame(attempt);
 
     return () => {
       cancelled = true;
-      cleanup?.();
+      cancelAnimationFrame(first);
+      if (landed) {
+        cleanup?.();
+        claimed.node.remove();
+        return;
+      }
+      /* Never got off the ground, so this is either StrictMode's throwaway
+         first pass or a route that unmounted before its hero arrived. Hand the
+         copy back rather than destroying it: a re-run claims it and flies it,
+         and if nothing ever does, the orphan timer clears it. */
+      claimed.orphan = setTimeout(discardHero, ORPHAN_MS);
+      pending = claimed;
+      airborne = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);

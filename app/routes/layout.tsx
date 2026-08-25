@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 import { GitHubIcon, HomeIcon, LinkedInIcon, MoonIcon, ResumeIcon, SunIcon } from "../components/Icons";
+import { useBootReveal } from "../hooks/useBootReveal";
 import { useDeck } from "../hooks/useDeck";
-import { captureHero, hasPendingHero } from "../hooks/useHeroFlight";
+import { captureHero } from "../hooks/useHeroFlight";
+import { isPlainClick, usePageEnter, useTransitionNavigate } from "../hooks/usePageTransition";
 import { useLenis } from "../hooks/useLenis";
 import { useTheme } from "../hooks/useTheme";
 import { projectBySlug, projects } from "../lib/projects";
 import { site } from "../lib/site";
-
-const COPIES = 3;
-const ENTER_MS = 600;
 
 /* The left pane is one slot fed from three sources, the same way default.html
    fed it: the site on the home page, the project's own front matter on a
@@ -45,12 +44,23 @@ export default function AppLayout() {
 
   const { scrollToIndex } = useDeck({
     scrollerRef,
-    lenisRef,
     count: projects.length,
-    copies: COPIES,
     enabled: isHome,
     onActive
   });
+
+  /* Home is not a scroll container any more — useVirtualDeck owns the wheel
+     there and derives the deck's position from it directly. Lenis smoothing a
+     scrollTop nothing reads would only fight that, so it stands down for the
+     duration and picks up again on the pages that do scroll. The instance is
+     kept either way: it is created once in this layout and outliving every
+     navigation is the point of it. */
+  useEffect(() => {
+    const lenis = lenisRef.current;
+    if (!lenis) return;
+    if (isHome) lenis.stop();
+    else lenis.start();
+  }, [isHome, lenisRef]);
 
   /* Lenis caches the scroll limit, and the pane's own box never changes — only
      what is inside it does. Re-measuring on the route change catches the swap,
@@ -73,20 +83,22 @@ export default function AppLayout() {
     return () => observer.disconnect();
   }, [pathname, isHome, lenisRef]);
 
-  /* The entry animation. `is-flat` drops the 14px rise for a page receiving a
-     flight: the flight measures its destination the moment the route mounts,
-     and a shell still settling underneath it would make the landing jump. */
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const root = document.documentElement;
-    root.classList.add("is-entering");
-    if (hasPendingHero()) root.classList.add("is-flat");
-    const id = setTimeout(() => root.classList.remove("is-entering", "is-flat"), ENTER_MS + 80);
-    return () => {
-      clearTimeout(id);
-      root.classList.remove("is-entering", "is-flat");
-    };
-  }, [pathname]);
+  /* The opening, then every arrival after it.
+   *
+   * useBootReveal is called after useDeck deliberately: effects run in call
+   * order, so the wheel has measured the pane and written every card's seat
+   * before the reveal is even considered. All of that happens behind the
+   * curtain data-boot holds up, which is why the deck no longer snaps into
+   * place in front of the reader on a cold load.
+   *
+   * usePageEnter is the same rise on the same curve for a route change. What
+   * used to be here was a class on <html> driving a keyframe over the whole
+   * shell — one opacity for the entire page, which is why everything landed at
+   * once. The pieces are staggered individually now, and a page receiving a
+   * flight drops the rise so the two motions do not argue. */
+  useBootReveal();
+  usePageEnter();
+  const go = useTransitionNavigate();
 
   const pane = paneFor(pathname);
   const projectHero = () =>
@@ -109,7 +121,11 @@ export default function AppLayout() {
             to="/"
             aria-label="Home"
             aria-current={isHome ? "page" : undefined}
-            onClick={() => captureHero(projectHero())}
+            onClick={(event) => {
+              if (!isPlainClick(event) || isHome) return;
+              event.preventDefault();
+              go("/", () => captureHero(projectHero()));
+            }}
           >
             <HomeIcon />
           </Link>
@@ -131,7 +147,16 @@ export default function AppLayout() {
           >
             <GitHubIcon />
           </a>
-          <Link className="icon-btn" to="/resume" aria-label="Resume">
+          <Link
+            className="icon-btn"
+            to="/resume"
+            aria-label="Resume"
+            onClick={(event) => {
+              if (!isPlainClick(event) || pathname.startsWith("/resume")) return;
+              event.preventDefault();
+              go("/resume");
+            }}
+          >
             <ResumeIcon />
           </Link>
           <button

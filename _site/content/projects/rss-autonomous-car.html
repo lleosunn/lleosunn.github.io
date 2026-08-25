@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Robotics: Science and Systems | Leo Sun</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Robotics: Science and Systems" />
+<meta name="author" content="Leo Sun" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Autonomous driving projects for MIT’s RSS class." />
+<meta property="og:description" content="Autonomous driving projects for MIT’s RSS class." />
+<link rel="canonical" href="http://localhost:4000/content/projects/rss-autonomous-car.html" />
+<meta property="og:url" content="http://localhost:4000/content/projects/rss-autonomous-car.html" />
+<meta property="og:site_name" content="Leo Sun" />
+<meta property="og:image" content="http://localhost:4000/assets/img/20260515RSSAutonomousCar/rss-autonomous-car.jpg" />
+<meta property="og:image:alt" content="RSS autonomous car test platform" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-05-15T00:00:00-07:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/assets/img/20260515RSSAutonomousCar/rss-autonomous-car.jpg" />
+<meta name="twitter:image:alt" content="RSS autonomous car test platform" />
+<meta property="twitter:title" content="Robotics: Science and Systems" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Leo Sun"},"dateModified":"2026-05-15T00:00:00-07:00","datePublished":"2026-05-15T00:00:00-07:00","description":"Autonomous driving projects for MIT’s RSS class.","headline":"Robotics: Science and Systems","image":{"alt":"RSS autonomous car test platform","url":"http://localhost:4000/assets/img/20260515RSSAutonomousCar/rss-autonomous-car.jpg","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/content/projects/rss-autonomous-car.html"},"url":"http://localhost:4000/content/projects/rss-autonomous-car.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7b5835a797a13dab8c2a351fb2fdd3abed8017d6">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Leo Sun</a></h1>
+      
+
+      <h2 id="overview">Overview</h2>
+<p>For MIT’s Robotics: Science and Systems class, I worked on a full autonomy stack for the RACECAR platform across five labs: reactive wall following, visual servoing, Monte Carlo localization, path planning, and an integrated final challenge.</p>
+
+<p>The work started with isolated autonomy modules and gradually built toward end-to-end navigation. By the final challenge, the stack combined camera and LiDAR perception, localization, path planning, pure-pursuit control, and a ROS state machine for multi-stage autonomous behavior.</p>
+
+<p>The team lab portfolio is available <a href="https://rss2026-4.github.io/website/labs/">here</a>.</p>
+
+<hr />
+
+<h2 id="lab-03-wall-following">Lab 03: Wall Following</h2>
+<p>I implemented the wall-following approach around LiDAR preprocessing, spline fitting, offset-path generation, and pure-pursuit tracking. Raw LiDAR scans were converted from polar measurements into vehicle-frame Cartesian points, filtered to the side of the car we wanted to follow, and downsampled to keep the controller lightweight.</p>
+
+<p>From the filtered wall points, I fit a cubic B-spline to estimate a smooth wall boundary. The controller then generated an offset path at the desired wall distance by computing tangent and normal directions along the spline. A pure-pursuit controller selected a lookahead point on this offset path and converted it into steering commands for the RACECAR.</p>
+
+<p>I also added corner handling using the forward LiDAR region. When the car detected that the wall geometry was changing quickly or that an obstacle was close ahead, the controller biased steering away from the wall so it could navigate corners more reliably.</p>
+
+<p>The final wall follower ran on the physical RACECAR and was tested on straight walls, angled approaches, and corner cases at multiple speeds. In the team’s trials, the system maintained roughly a 0.5 m wall offset and showed low steady-state error across the tested speed range.</p>
+
+<!-- VIDEO: RSS Lab 03 wall following -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/DJ-H2TL0qZU" title="RSS Lab 03 wall-following demo" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+
+<hr />
+
+<h2 id="lab-04-visual-servoing">Lab 04: Visual Servoing</h2>
+<p>For visual servoing, we built a camera-based pipeline for cone parking and line following. The perception side compared several object-detection approaches, including color segmentation, SIFT, template matching, and YOLO. For the cone-parking task, color segmentation ended up being the most reliable simple approach, with strong IOU performance on our test images.</p>
+
+<p>The cone-parking pipeline detected the cone in image space, used a homography transform to estimate the cone’s relative position in the robot frame, and passed that target into a pure-pursuit-style parking controller. The controller handled cases such as being close enough, being misaligned, approaching a cone in front, or backing up in simulation when the cone was behind the car.</p>
+
+<p>For line following, we tuned HSV thresholds and camera regions of interest to focus on useful lane pixels under difficult lighting. The car then followed the detected line using the same general visual-servoing idea: estimate a target point from camera data, transform it into a driving command, and tune the controller until the behavior was stable on hardware.</p>
+
+<!-- VIDEO: RSS Lab 04 visual servoing -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/0eR7Fgw2NP4" title="RSS Lab 04 visual-servoing demo" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+
+<hr />
+
+<h2 id="lab-05-localization">Lab 05: Localization</h2>
+<p>In the localization lab, we implemented Monte Carlo Localization for the RACECAR using noisy odometry, LiDAR scans, and a known occupancy-grid map. The particle filter maintained many pose hypotheses, propagated them through a motion model, scored them with a LiDAR sensor model, and repeatedly reweighted/resampled the distribution until it converged to a pose estimate.</p>
+
+<p>My main work was on the particle-filter update loop. On each odometry callback, the system computed a body-frame control increment from linear velocity, lateral velocity, yaw rate, and elapsed time, then propagated each particle through the motion model. On each LiDAR callback, the scan was downsampled to 100 beams, ray-cast expected ranges were compared against observed ranges, and particle weights were updated with a geometric-mean likelihood to avoid collapse from a few bad beams.</p>
+
+<p>I also worked on the real-world implementation and evaluation. We tested localization on the physical RACECAR, comparing the particle filter’s pose estimate against measured ground truth in the Stata basement. Across those tests, the particle filter achieved about 9 cm RMSE, with the biggest failures coming from cluttered areas where the real environment did not match the map well.</p>
+
+<!-- VIDEO: RSS Lab 05 localization -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/Z8_q6YccryU" title="RSS Lab 05 localization demo" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+
+<hr />
+
+<h2 id="lab-06-path-planning">Lab 06: Path Planning</h2>
+<p>For path planning, we built a full navigation pipeline that connected localization, planning, and trajectory following. I worked on the sampling-based planner: a bidirectional RRT-Connect implementation that grew one tree from the start and one tree from the goal until they connected.</p>
+
+<p>Before planning, the occupancy grid was inflated by about 0.45 m to account for the car footprint and safety margin. RRT-Connect sampled free cells, converted them into world coordinates, extended toward random samples with a fixed step size, collision-checked candidate edges, and greedily tried to connect the opposite tree. After a path was found, the planner applied random shortcutting to smooth out jagged sampled paths before publishing the trajectory.</p>
+
+<p>We compared RRT-Connect against A<em>. A</em> produced shorter, resolution-optimal paths on the inflated grid, while RRT-Connect planned much faster. The team ultimately favored RRT-Connect for later integration because fast replanning mattered more for the final challenge, and the map inflation plus safety controller reduced the risk from less optimal paths.</p>
+
+<p>The final Lab 6 stack used Monte Carlo Localization for pose estimates, RRT-Connect for feasible path generation, and pure pursuit for trajectory tracking. In simulation, the system reached a mean cross-track error of about 0.0188 m; on the physical car, tracking error was about 0.03 m on straights and 0.05 m through corners.</p>
+
+<!-- VIDEO: RSS Lab 06 path planning -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/7B7-hvqkuhU" title="RSS Lab 06 path-planning demo" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+
+<hr />
+
+<h2 id="final-challenge">Final Challenge</h2>
+<p>The final challenge combined the earlier modules into two larger tasks: a lane-following “Great Snail Race” and a more structured driving task called “Mrs. Puff’s Boating School.”</p>
+
+<p>For the lane-following race, the stack used the ZED camera to detect lane boundaries. The pipeline applied a region-of-interest mask, HSV thresholding for white pixels, Canny edge detection, and a Hough transform to estimate lane lines and a centerline. Homography converted the lookahead point into the robot frame, pure pursuit generated steering, and an exponential moving average filter smoothed noisy steering commands. The lane detector reached roughly 0.06 m RMSE against tape-measured ground truth, and the follower stayed around 5-7 cm cross-track error across tested straights and turns.</p>
+
+<p>For the structured driving task, we integrated LiDAR, camera perception, odometry, localization, RRT-Connect planning, pure pursuit, object detection, and a state machine. The state machine coordinated forward planning, path following, traffic-light stopping, parking-meter behavior, reversing, return planning, and return path following. YOLO and color detection handled traffic lights and parking meters, while homography estimated object distances for stopping and parking behavior.</p>
+
+<!-- VIDEO: RSS final challenge -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/Pr2ZdtEVybE" title="RSS final challenge demo" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+
+<p>The biggest final-challenge lesson was that hardware noise and integration details matter as much as individual algorithms. Components that worked cleanly in isolation still needed careful tuning once they ran together with real sensors, mechanical variation, compute load, and ROS timing.</p>
+
+<hr />
+
+<h2 id="my-thoughts">My Thoughts</h2>
+<p>This has probably been my favorite class at MIT so far. In my opinion it is the best way to learn ROS 2 as well as foundational/classicial robotics concepts. This class is also a big time sink. I think I spent at least 20 hours in the Stata basement just working and debugging the car. Kinda upset that the class is only 12 units but I think it was still worth it in the end. I had a great learning experience and am also super grateful for my team.</p>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/lleosunn/lleosunn.github.io/edit/gh-pages/content/projects/rss-autonomous-car.md">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

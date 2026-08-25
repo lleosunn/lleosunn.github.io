@@ -13,7 +13,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("../fonts/inter-400-latin.woff2") format("woff2");
+  src: url("/assets/fonts/inter-400-latin.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
     U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
     U+2212, U+2215, U+FEFF, U+FFFD;
@@ -24,7 +24,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("../fonts/inter-400-latin-ext.woff2") format("woff2");
+  src: url("/assets/fonts/inter-400-latin-ext.woff2") format("woff2");
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
     U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
     U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
@@ -35,7 +35,7 @@
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url("../fonts/inter-600-latin.woff2") format("woff2");
+  src: url("/assets/fonts/inter-600-latin.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
     U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
     U+2212, U+2215, U+FEFF, U+FFFD;
@@ -46,7 +46,7 @@
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url("../fonts/inter-600-latin-ext.woff2") format("woff2");
+  src: url("/assets/fonts/inter-600-latin-ext.woff2") format("woff2");
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
     U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
     U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
@@ -298,25 +298,31 @@ button {
 
 /* --- Project tiles (home) ------------------------------------------------ */
 
-/* Each .tile is one slot exactly as tall as the scrollport, so a card sits at
-   centre whenever the scroller is a whole number of slots along, with no
-   scroll-padding gymnastics. Nothing snaps: the scroll runs free and the wheel
-   turns continuously with it, resting between cards as readily as on one. The
-   card inside a slot is what moves: nav.js scales it down and pulls it toward
-   centre as it leaves, by less each time, so every neighbour clears the one in
-   front by a thinner sliver and the run of them reads as a wheel turning away.
-   Transforms stay off the slot itself so the layout boxes nav.js measures
-   never move. */
+/* Every .tile occupies the same box — the whole pane — and they are separated
+   only by the transform useDeck writes each frame: a card is scaled down and
+   pulled toward centre as it leaves, by less each time, so every neighbour
+   clears the one in front by a thinner sliver and the run of them reads as a
+   wheel turning away.
+
+   They used to be full-height slots in a real scroll container, one per card,
+   the list emitted three times so the wheel had somewhere to loop through.
+   There is no scroll container any more: the pane does not scroll, the position
+   is a float, and stacking the tiles is what lets that float place them
+   directly instead of correcting for wherever layout had already put them. */
 
 [data-page="home"] .pane-right {
-  /* Vertical padding would desync slot height from scrollport height, and a
-     slot shorter than the pane cannot fill it. nav.js measures the slots it
-     centres on rather than assuming this, so the two no longer have to agree —
-     but a card that stops short of the pane edges is not the wheel. */
   padding: 0 calc(var(--gutter) + 22px);
+  /* The deck owns the wheel. Native scrolling here would move the pane out
+     from under a position that is no longer derived from it. */
+  overflow: hidden;
+  overscroll-behavior: none;
+  /* useVirtualDeck calls preventDefault on touchmove; declaring it here as well
+     stops the browser starting its own pan before the listener is reached. */
+  touch-action: none;
 }
 
 .tiles {
+  position: relative;
   height: 100%;
   /* Sizes the card against the pane rather than the viewport: on mobile the
      pane is shorter than the screen, and viewport units there would grow the
@@ -325,12 +331,22 @@ button {
 }
 
 .tile {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
-  height: 100%;
-  /* nav.js sets z-index per card so nearer cards of the deck paint on top;
-     without position the index would be ignored. */
-  position: relative;
+}
+
+/* The page is prerendered, so this markup paints before any of it is hydrated —
+   and until the first frame of the deck runs, all twelve cards are stacked in
+   the same place. One is the front of the wheel; the rest wait for the seat the
+   first paint gives them. useDeck writes opacity inline, which outranks this. */
+.tile__card {
+  opacity: 0;
+}
+
+.tile:first-child .tile__card {
+  opacity: 1;
 }
 
 .tile__card {
@@ -867,72 +883,78 @@ button {
   overscroll-behavior: contain;
 }
 
+/* --- The opening --------------------------------------------------------- */
+
+/* data-boot is set by the head script in root.tsx before the first paint and
+   removed by useBootReveal once the page is ready to play itself in.
+
+   It has to be CSS, matched at parse time, and it has to be an attribute an
+   inline script set. The site is prerendered: the markup is complete when it
+   arrives, so the browser paints a finished page and then hydration seats the
+   deck on top of what the reader is already looking at. Anything that hides
+   these elements later than the stylesheet — a class React adds, a style an
+   effect writes — is added after the paint it was supposed to prevent.
+
+   Only the panes' contents are hidden. The page keeps its background, its
+   layout and its full height throughout, so nothing here is a blank screen; it
+   is the same page with its contents still to arrive. Reduced motion never
+   gets the attribute at all, so this rule can never match for a reader who
+   asked not to be animated at. */
+
+:root[data-boot] .identity > *,
+:root[data-boot] .icon-row,
+:root[data-boot] .dots,
+:root[data-boot] .tiles,
+:root[data-boot] .project__media,
+:root[data-boot] .prose > * {
+  opacity: 0;
+}
+
+/* The other end of the same curtain: the head script's timer sets this instead
+   of just taking data-boot off, so a bundle that never arrives — or a hydration
+   still going after two and a half seconds — ends in a fade rather than a
+   flash. The distance and the curve are the ones in usePageTransition.ts, the
+   only two numbers in this file that have a twin in the TypeScript. There is no
+   stagger: nothing is running that could conduct one. */
+
+@keyframes boot-late {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+:root[data-boot-late] .identity > *,
+:root[data-boot-late] .icon-row,
+:root[data-boot-late] .dots,
+:root[data-boot-late] .tiles,
+:root[data-boot-late] .project__media,
+:root[data-boot-late] .prose > * {
+  animation: boot-late 640ms cubic-bezier(0.32, 0, 0, 1) both;
+}
+
 /* --- Page transitions ---------------------------------------------------- */
 
-/* A navigation is three moves: the outgoing shell fades while whatever is being
-   handed over holds still above it, the browser swaps documents, and the
-   incoming shell plays itself in around a flyer that lands on its destination.
-   transitions.js owns the timing and the flight; this is the shape of it.
+/* A navigation is three moves: the outgoing pane clears while whatever is being
+   handed over holds still above it, the route swaps, and the incoming pane
+   plays itself in around a flyer that lands on its destination.
 
-   The entry is an animation rather than a class the page waits to have taken
-   off it. `both` fill means it runs to a visible page whether or not any script
-   is there to clean up after it, so a failed asset can never leave the site
-   blank. */
+   All three now live in usePageTransition.ts and useHeroFlight.ts rather than
+   here. What used to be in this space was a set of classes on <html> driving
+   keyframes over the whole of .shell — one opacity for the entire page, which
+   is exactly why everything used to arrive at once and read as a pop. The
+   pieces are staggered individually now, and the elements that persist across a
+   navigation (the icon row, the dots) are simply not in the list.
+
+   The transition below is still worth having: it is what the theme toggle rides
+   on, and it is the only thing left that animates .shell as a whole. */
 
 .shell {
   transition: opacity 240ms var(--ease-page), transform 240ms var(--ease-page);
-}
-
-:root.is-entering .shell {
-  animation: page-in 600ms var(--ease-page) both;
-}
-
-:root.is-leaving .shell {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-
-@keyframes page-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* A flight measures its destination the moment the page arrives, and the rise
-   above would have that box 14px below where it comes to rest — enough that the
-   landing visibly jumps as the shell settles under it. So a page receiving a
-   flight only fades: the flight is already the motion, and a second one moving
-   underneath it was never going to read as one gesture anyway.
-
-   It is a separate class from the one hiding the hero because the two have
-   different lifetimes. This one has to survive untouched until the animation it
-   belongs to is over — swapping animation-name midway restarts the animation,
-   which would flash the page back to nothing. */
-:root.is-flat.is-entering .shell {
-  animation-name: page-in-flat;
-}
-
-@keyframes page-in-flat {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* A hero held back until its flyer lands on it. transitions.js takes over with
-   an inline visibility the moment it has measured, so this only has to cover
-   the frames before it runs — but it is set in the document head, which is the
-   only place early enough to stop the hero flashing at its destination. */
-:root.is-hero-in .project__media img,
-:root.is-hero-in .project__media video {
-  visibility: hidden;
 }
 
 /* The travelling copy, pinned to the viewport outside .shell so the fade never
@@ -1074,10 +1096,23 @@ button {
     transition: none;
   }
 
-  /* scroll.js and transitions.js both bow out entirely at this setting, and
-     the head script never sets the class. This is only here so the rule cannot
-     be reached by a stale class left on the element. */
-  :root.is-entering .shell {
-    animation: none;
+  /* The deck bows out too, which means no transform ever separates the stacked
+     tiles — left alone that is a pile showing one card. The wheel is not the
+     point at this setting anyway, so the cards become what they are underneath:
+     an ordinary vertical list the browser scrolls. */
+  [data-page="home"] .pane-right {
+    overflow-y: auto;
+    touch-action: auto;
+  }
+
+  .tile {
+    position: relative;
+    inset: auto;
+    height: 100%;
+  }
+
+  .tile__card,
+  .tile:first-child .tile__card {
+    opacity: 1;
   }
 }

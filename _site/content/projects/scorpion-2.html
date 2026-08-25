@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Scorpion 2.0 | Leo Sun</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Scorpion 2.0" />
+<meta name="author" content="Leo Sun" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Competition robot for FIRST Tech Challenge CENTERSTAGE (2023-2024)." />
+<meta property="og:description" content="Competition robot for FIRST Tech Challenge CENTERSTAGE (2023-2024)." />
+<link rel="canonical" href="http://localhost:4000/content/projects/scorpion-2.html" />
+<meta property="og:url" content="http://localhost:4000/content/projects/scorpion-2.html" />
+<meta property="og:site_name" content="Leo Sun" />
+<meta property="og:image" content="http://localhost:4000/assets/img/20240316Scorpionv2/robotcad.png" />
+<meta property="og:image:alt" content="Scorpion 2.0" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2024-03-01T00:00:00-08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/assets/img/20240316Scorpionv2/robotcad.png" />
+<meta name="twitter:image:alt" content="Scorpion 2.0" />
+<meta property="twitter:title" content="Scorpion 2.0" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Leo Sun"},"dateModified":"2024-03-01T00:00:00-08:00","datePublished":"2024-03-01T00:00:00-08:00","description":"Competition robot for FIRST Tech Challenge CENTERSTAGE (2023-2024).","headline":"Scorpion 2.0","image":{"alt":"Scorpion 2.0","url":"http://localhost:4000/assets/img/20240316Scorpionv2/robotcad.png","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/content/projects/scorpion-2.html"},"url":"http://localhost:4000/content/projects/scorpion-2.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7b5835a797a13dab8c2a351fb2fdd3abed8017d6">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Leo Sun</a></h1>
+      
+
+      <h2 id="overview">Overview</h2>
+<p>I served as team captain for my FTC team during the 2023–2024 CENTERSTAGE season. The game objective focused on collecting small plastic hexagonal pieces called <em>pixels</em> and stacking them onto a slanted scoring board, followed by an endgame hang. As in the previous season, I was heavily involved in designing, building, and programming the robot, contributing across mechanical design, system integration, and autonomous software.</p>
+
+<hr />
+
+<h2 id="game-constraints--design-goals">Game Constraints &amp; Design Goals</h2>
+<p>CENTERSTAGE introduced several unique constraints that strongly influenced the robot design:</p>
+<ul>
+  <li>The robot needed to stack pixels progressively higher on a slanted board</li>
+  <li>An endgame hang required lifting the entire robot off the ground</li>
+  <li>A central field bridge limited robot height to 14 inches</li>
+  <li>The robot needed sufficient reach while remaining compact</li>
+</ul>
+
+<p>Our goal was to design a robot that balanced low profile, high reach, and mechanical strength without sacrificing mobility.</p>
+
+<hr />
+
+<h2 id="mechanical-design--build">Mechanical Design &amp; Build</h2>
+
+<h3 id="drivetrain">Drivetrain</h3>
+<p>We again chose a mecanum drive base to enable omnidirectional movement and precise alignment with the scoring board.</p>
+
+<ul>
+  <li>Four motors, each connected via belt drive</li>
+  <li>Compact footprint to fit under the 14-inch bridge</li>
+  <li>Designed for stability while supporting tall extensions</li>
+</ul>
+
+<h3 id="lift-intake-and-endgame">Lift, Intake, and Endgame</h3>
+<p>To meet the combined stacking and hanging requirements, the robot used:</p>
+<ul>
+  <li>Three motors powering the linear slides to maximize lifting force</li>
+  <li>A roller-based intake driven by a single motor</li>
+  <li>A pixel storage box capable of holding two pixels at once</li>
+  <li>An arm and linear slide system that could deposit:
+    <ul>
+      <li>One pixel at a time</li>
+      <li>Both pixels simultaneously</li>
+    </ul>
+  </li>
+</ul>
+
+<p>The high-powered linear slide system allowed the robot to reliably lift itself during the endgame hang.</p>
+
+<!-- IMAGE: Robot CAD -->
+<p><img src="/assets/img/20240316Scorpionv2/robot.png" alt="Scorpion 2.0 CAD" />
+<em>Photo of CENTERSTAGE Robot</em></p>
+
+<hr />
+
+<h2 id="software--automation">Software &amp; Automation</h2>
+
+<h3 id="localization--control">Localization &amp; Control</h3>
+<p>The robot used a localization setup similar to the previous season:</p>
+<ul>
+  <li>Three odometry pods</li>
+  <li>An IMU for heading correction</li>
+</ul>
+
+<p>Position control was handled using three independent PID loops, controlling:</p>
+<ul>
+  <li>(x) position</li>
+  <li>(y) position</li>
+  <li>Heading (θ)</li>
+</ul>
+
+<p>This resulted in a navigation system with sub–1 inch positional error under competition conditions.</p>
+
+<hr />
+
+<h3 id="waypoint-based-navigation">Waypoint-Based Navigation</h3>
+<p>Autonomous routines were implemented using:</p>
+<ul>
+  <li>Waypoint-based navigation</li>
+  <li>Inflated waypoints to maintain clearance</li>
+  <li>Interpolated paths for smooth motion</li>
+</ul>
+
+<p>This framework allowed the robot to navigate along arbitrary paths and reliably execute complex autonomous sequences.</p>
+
+<!-- VIDEO: Full autonomous stacking -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/XBt4nfcdjBU" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+<p><em>Full autonomous routine stacking pixels on the board</em></p>
+
+<hr />
+
+<h2 id="endgame-performance">Endgame Performance</h2>
+
+<!-- VIDEO: Hanging demonstration -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/T3cqV-QlkFQ" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+<p><em>Endgame hang using the linear slide system</em></p>
+
+<p>The reinforced lift system provided enough torque and stability to lift the robot consistently at the end of matches.</p>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/lleosunn/lleosunn.github.io/edit/gh-pages/content/projects/scorpion-2.md">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

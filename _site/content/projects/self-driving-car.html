@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Self-Driving Car | Leo Sun</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Self-Driving Car" />
+<meta name="author" content="Leo Sun" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Quanser Self-Driving Car Student Competition at the 2025 American Control Conference." />
+<meta property="og:description" content="Quanser Self-Driving Car Student Competition at the 2025 American Control Conference." />
+<link rel="canonical" href="http://localhost:4000/content/projects/self-driving-car.html" />
+<meta property="og:url" content="http://localhost:4000/content/projects/self-driving-car.html" />
+<meta property="og:site_name" content="Leo Sun" />
+<meta property="og:image" content="http://localhost:4000/assets/img/20250708SelfDrivingCar/selfdrivingcar.png" />
+<meta property="og:image:alt" content="Self-Driving Car" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-07-01T00:00:00-07:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/assets/img/20250708SelfDrivingCar/selfdrivingcar.png" />
+<meta name="twitter:image:alt" content="Self-Driving Car" />
+<meta property="twitter:title" content="Self-Driving Car" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Leo Sun"},"dateModified":"2025-07-01T00:00:00-07:00","datePublished":"2025-07-01T00:00:00-07:00","description":"Quanser Self-Driving Car Student Competition at the 2025 American Control Conference.","headline":"Self-Driving Car","image":{"alt":"Self-Driving Car","url":"http://localhost:4000/assets/img/20250708SelfDrivingCar/selfdrivingcar.png","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/content/projects/self-driving-car.html"},"url":"http://localhost:4000/content/projects/self-driving-car.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=7b5835a797a13dab8c2a351fb2fdd3abed8017d6">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Leo Sun</a></h1>
+      
+
+      <h2 id="overview">Overview</h2>
+<p>I participated in the Quanser Self-Driving Car Student Competition, held at the 2025 American Control Conference (ACC) in Denver, Colorado. The competition simulated an Uber-like autonomous driving environment, where teams programmed a self-driving car to navigate a city map, pick up passengers, drop them off at target locations, and return to a home base while obeying traffic laws. Teams were scored based on the complexity and number of routes completed within a fixed time limit.</p>
+
+<hr />
+
+<h2 id="team-structure--my-role">Team Structure &amp; My Role</h2>
+<p>Our team of three divided the system into three core components:</p>
+<ul>
+  <li>Perception: Camera-based detection of stop signs and traffic lights</li>
+  <li>State Estimation: Localization using LiDAR and wheel encoders</li>
+  <li>Control: Path planning and trajectory tracking</li>
+</ul>
+
+<p>I was responsible for the control subsystem, focusing on global path planning and low-level path following for an Ackermann-drive vehicle.</p>
+
+<hr />
+
+<h2 id="control-system-design">Control System Design</h2>
+
+<h3 id="roadmap--path-planning">Roadmap &amp; Path Planning</h3>
+<p>To support flexible route selection, I designed a directed graph roadmap consisting of 52 nodes, connected by a combination of straight-line segments and circular arcs.</p>
+
+<p>The roadmap encoded:</p>
+<ul>
+  <li>Road geometry</li>
+  <li>Legal driving directions</li>
+  <li>Locations of stop signs, traffic lights, and yield signs</li>
+</ul>
+
+<p>I implemented Dijkstra’s algorithm on this roadmap to compute shortest paths between arbitrary pickup and drop-off locations, enabling efficient route planning during competition runs.</p>
+
+<!-- IMAGE: Planned roadmap -->
+<p><img src="/assets/img/20250708SelfDrivingCar/drawnroadmap.jpg" alt="Planned roadmap" />
+<em>Hand-designed roadmap representing the competition environment</em></p>
+
+<!-- IMAGE: Coded roadmap -->
+<p><img src="/assets/img/20250708SelfDrivingCar/codedroadmap.png" alt="Coded roadmap" />
+<em>Directed graph implementation with line segments and arcs used for path planning</em></p>
+
+<hr />
+
+<h3 id="path-following--control">Path Following &amp; Control</h3>
+<p>For trajectory tracking, I implemented a Pure Pursuit controller using ROS 2 and Python.</p>
+
+<p>Key features:</p>
+<ul>
+  <li>Ackermann steering-compatible control</li>
+  <li>Smooth tracking of both straight and curved path segments</li>
+  <li>Real-time command generation for vehicle steering and velocity</li>
+</ul>
+
+<p>This controller allowed the car to reliably follow planned routes from point A to point B.</p>
+
+<hr />
+
+<h2 id="competition-results--lessons-learned">Competition Results &amp; Lessons Learned</h2>
+<p>Our team competed at ACC and placed 6th out of 28 teams. While our control system performed as intended, overall performance was affected by system-level issues:</p>
+<ul>
+  <li>Traffic light detection failures in the vision system caused penalties for running red lights</li>
+  <li>Movable foam-core walls in the environment reduced localization accuracy</li>
+  <li>As a result, we prioritized simpler routes over longer, more complex ones</li>
+</ul>
+
+<p>Despite these challenges, the competition provided valuable experience working with ROS 2, multi-module autonomous systems, and the realities of deploying autonomy in imperfect, real-world environments.</p>
+
+<hr />
+
+<h2 id="demo">Demo</h2>
+
+<!-- VIDEO: Self-driving car demo -->
+<figure class="video-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/2KP8IuVTET8" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">
+  </iframe>
+</figure>
+<p><em>Demo of the car following a planned route during competition</em></p>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/lleosunn/lleosunn.github.io/edit/gh-pages/content/projects/self-driving-car.md">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>
