@@ -1,0 +1,110 @@
+---
+title: Scorpion 2.0
+description: Competition robot for FIRST Tech Challenge CENTERSTAGE (2023-2024).
+author: Leo Sun
+date: 2024-03-01
+end_date: 2024-03-31
+slug: scorpion-2
+display: true
+tile_order: 10
+years: "Jun 2023 - Mar 2024"
+image:
+  path: /assets/img/20240316Scorpionv2/robotcad.png
+  alt: Scorpion 2.0
+---
+
+## Overview
+I served as team captain for my FTC team during the 2023–2024 CENTERSTAGE season. The game objective focused on collecting small plastic hexagonal pieces called *pixels* and stacking them onto a slanted scoring board, followed by an endgame hang. As in the previous season, I was heavily involved in designing, building, and programming the robot, contributing across mechanical design, system integration, and autonomous software.
+
+---
+
+## Game Constraints & Design Goals
+CENTERSTAGE introduced several unique constraints that strongly influenced the robot design:
+- The robot needed to stack pixels progressively higher on a slanted board
+- An endgame hang required lifting the entire robot off the ground
+- A central field bridge limited robot height to 14 inches
+- The robot needed sufficient reach while remaining compact
+
+Our goal was to design a robot that balanced low profile, high reach, and mechanical strength without sacrificing mobility.
+
+---
+
+## Mechanical Design & Build
+
+### Drivetrain
+We again chose a mecanum drive base to enable omnidirectional movement and precise alignment with the scoring board.
+
+- Four motors, each connected via belt drive
+- Compact footprint to fit under the 14-inch bridge
+- Designed for stability while supporting tall extensions
+
+### Lift, Intake, and Endgame
+To meet the combined stacking and hanging requirements, the robot used:
+- Three motors powering the linear slides to maximize lifting force
+- A roller-based intake driven by a single motor
+- A pixel storage box capable of holding two pixels at once
+- An arm and linear slide system that could deposit:
+  - One pixel at a time
+  - Both pixels simultaneously
+
+The high-powered linear slide system allowed the robot to reliably lift itself during the endgame hang.
+
+<!-- IMAGE: Robot CAD -->
+![Scorpion 2.0 CAD](/assets/img/20240316Scorpionv2/robot.png)
+_Photo of CENTERSTAGE Robot_
+
+---
+
+## Software & Automation
+
+### Localization & Control
+The robot used a localization setup similar to the previous season:
+- Three odometry pods
+- An IMU for heading correction
+
+Position control was handled using three independent PID loops, controlling:
+- (x) position
+- (y) position
+- Heading (θ)
+
+This resulted in a navigation system with sub–1 inch positional error under competition conditions.
+
+---
+
+### Waypoint-Based Navigation
+Autonomous routines were implemented using:
+- Waypoint-based navigation
+- Inflated waypoints to maintain clearance
+- Interpolated paths for smooth motion
+
+This framework allowed the robot to navigate along arbitrary paths and reliably execute complex autonomous sequences.
+
+<!-- VIDEO: Full autonomous stacking -->
+<figure class="video-embed">
+  <iframe
+    src="https://www.youtube-nocookie.com/embed/XBt4nfcdjBU"
+    title="YouTube video"
+    loading="lazy"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen>
+  </iframe>
+</figure>
+_Full autonomous routine stacking pixels on the board_
+
+---
+
+## Endgame Performance
+
+<!-- VIDEO: Hanging demonstration -->
+<figure class="video-embed">
+  <iframe
+    src="https://www.youtube-nocookie.com/embed/T3cqV-QlkFQ"
+    title="YouTube video"
+    loading="lazy"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen>
+  </iframe>
+</figure>
+_Endgame hang using the linear slide system_
+
+The reinforced lift system provided enough torque and stability to lift the robot consistently at the end of matches.

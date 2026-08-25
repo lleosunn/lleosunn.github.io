@@ -1,0 +1,53 @@
+---
+title: PoolBot
+description: Physics-Aware Mobile Manipulator for Multi-Shot Autonomous Billiards.
+author: Leo Sun
+date: 2025-12-01
+end_date: 2025-12-31
+slug: poolbot
+display: true
+tile_order: 6
+years: "Sep 2025 - Dec 2025"
+image:
+  path: /assets/img/20251210Poolbot/poolbot.jpeg
+  alt: PoolBot
+---
+
+## Overview
+PoolBot is a physics-aware mobile manipulation system for autonomous billiards, developed as the final project for MIT 6.4210: Robotic Manipulation. The system is designed to plan and execute multi-shot pool sequences on a standard pool table by reasoning about ball dynamics, robot motion, and manipulation constraints. The project was completed by Avi Naurla, Suraj Reddy, and me, and emphasizes integrating perception, physics-based planning, and mobile manipulation into a single autonomous system.
+
+<!-- PDF: Final project paper -->
+[📄 Read the full project paper (PDF)](/assets/img/20251210Poolbot/paper.pdf)
+
+<iframe src="/assets/img/20251210Poolbot/paper.pdf" width="100%" height="600px" style="border: none;"></iframe>
+
+---
+
+
+## Media
+
+<!-- VIDEO: PoolBot in action -->
+<figure class="video-embed">
+  <iframe
+    src="https://www.youtube-nocookie.com/embed/7KfucNEqONA"
+    title="YouTube video"
+    loading="lazy"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen>
+  </iframe>
+</figure>
+_PoolBot autonomously planning and executing shots_
+
+
+
+<!-- VIDEO: Final project submission -->
+<figure class="video-embed">
+  <iframe
+    src="https://www.youtube-nocookie.com/embed/Zf_bZmYgHm0"
+    title="YouTube video"
+    loading="lazy"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen>
+  </iframe>
+</figure>
+_Final project submission demo for MIT 6.4210_
