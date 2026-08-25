@@ -82,10 +82,12 @@
   --card-radius: 22px;
   --card-shadow: 0 20px 55px rgba(0, 0, 0, 0.11);
 
-  /* Page transitions and the flight between them run on one curve: fast off
-     the mark, a long settle. Same family as the scroll easing in scroll.js, so
-     a click and a scroll feel like the same hand. */
-  --ease-page: cubic-bezier(0.075, 0.82, 0.165, 1);
+  /* The site's one curve, and the twin of EASE in app/lib/motion.ts — the page
+     opening, a route arriving, a card expanding into its project and the theme
+     crossing over are all the same move at different scales, which only holds
+     if they are the same numbers. It leaves gently, covers most of the distance
+     in the middle third, and then takes a long time to arrive. */
+  --ease-page: cubic-bezier(0.32, 0, 0, 1);
 }
 
 :root[data-theme="dark"] {
@@ -913,9 +915,8 @@ button {
 /* The other end of the same curtain: the head script's timer sets this instead
    of just taking data-boot off, so a bundle that never arrives — or a hydration
    still going after two and a half seconds — ends in a fade rather than a
-   flash. The distance and the curve are the ones in usePageTransition.ts, the
-   only two numbers in this file that have a twin in the TypeScript. There is no
-   stagger: nothing is running that could conduct one. */
+   flash. The distance is RISE from app/lib/motion.ts and the curve is the token
+   above. There is no stagger: nothing is running that could conduct one. */
 
 @keyframes boot-late {
   from {
@@ -934,7 +935,7 @@ button {
 :root[data-boot-late] .tiles,
 :root[data-boot-late] .project__media,
 :root[data-boot-late] .prose > * {
-  animation: boot-late 640ms cubic-bezier(0.32, 0, 0, 1) both;
+  animation: boot-late 640ms var(--ease-page) both;
 }
 
 /* --- Page transitions ---------------------------------------------------- */

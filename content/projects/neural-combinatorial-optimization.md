@@ -9,11 +9,8 @@ display: true
 tile_order: 4
 years: "Jan 2026 - May 2026"
 image:
-  path: /assets/img/20260510NCO/cvrp.gif
-  alt: Animated CVRP tour being optimized over successive trials
-preview_image:
   path: /assets/img/20260510NCO/cvrp-fast.gif
-  alt: Animated CVRP tour optimization
+  alt: Animated CVRP tour being optimized over successive trials
 ---
 
 ## The question

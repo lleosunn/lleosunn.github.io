@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router";
 import { heroPosterOf, previewOf, projects } from "../lib/projects";
+import { RISE } from "../lib/motion";
 import { preloadWhenIdle, WARM_CAP } from "../lib/preload";
-import { clear, pieces, reduced, RISE, rise } from "./usePageTransition";
+import { clear, pieces, reduced, rise } from "./usePageTransition";
 
 /* The opening.
  *

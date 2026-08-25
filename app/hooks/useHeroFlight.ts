@@ -1,4 +1,5 @@
 import { useEffect, type RefObject } from "react";
+import { EASE_CSS, REVEAL_MS } from "../lib/motion";
 
 /* The card that flies between the home deck and a project page.
  *
@@ -25,9 +26,39 @@ import { useEffect, type RefObject } from "react";
  * mask opens as it travels. Nothing inside is distorted; the window onto it
  * widens. */
 
-const ENTER_MS = 600;
+/* The flight is the same move as the opening and every arrival — same curve,
+   same clock — because it is the same hand. It used to run 600ms on easeOutCirc
+   while everything around it ran 720ms on the site's curve, and a morph that
+   leaves faster than the page it is leaving reads as a separate event. */
+const FLIGHT_MS = REVEAL_MS;
 const LAND_MS = 180;
-const EASE = "cubic-bezier(0.075, 0.82, 0.165, 1)";
+
+/* The lift.
+ *
+ * The copy is made on the click and then stands perfectly still for the length
+ * of the exit — a third of a second in which the page is visibly leaving and
+ * the thing the reader actually clicked does nothing at all. It is the one dead
+ * beat left in a navigation, and it is dead precisely because the flight cannot
+ * start: there is no destination to fly to until the route it belongs to has
+ * mounted.
+ *
+ * So the card starts moving without one. It swells very slightly, on the site's
+ * curve, from the instant it is clicked — the anticipation before a throw. By
+ * the time the destination exists the card is already in motion, and the flight
+ * takes over from wherever the lift has got to rather than from a standstill.
+ *
+ * Written to `scale`, the standalone property, so it composes with the
+ * `transform` the flight itself owns instead of fighting it. `transform-origin`
+ * is the top-left corner (the flight needs it there), so the lift carries a
+ * matching `translate` to keep the card growing about its own centre — without
+ * it the card would slide down and right as it swells. Both unwind to nothing
+ * over the flight, which is what makes the landing exact. */
+const LIFT = 1.04;
+
+/* Long enough to cover the exit and the render after it, so the swell is still
+   in progress when the flight claims it. Overshooting is harmless: the unwind
+   starts from wherever the lift actually is. */
+const LIFT_MS = 380;
 
 /* A flyer whose navigation never happened would otherwise sit over the page
    forever. Long enough to cover an exit plus a slow route, short enough that a
@@ -47,6 +78,7 @@ export interface Shot {
 interface Pending {
   shot: Shot;
   node: HTMLImageElement;
+  lift: Animation | null;
   orphan: ReturnType<typeof setTimeout>;
 }
 
@@ -132,12 +164,37 @@ export function captureHero(el: Element | null | undefined) {
   node.style.borderRadius = `${shot.radius}px`;
   document.body.appendChild(node);
 
-  pending = { shot, node, orphan: setTimeout(discardHero, ORPHAN_MS) };
+  pending = { shot, node, lift: swell(node, shot), orphan: setTimeout(discardHero, ORPHAN_MS) };
 }
 
-function fly(shot: Shot, node: HTMLImageElement, target: HTMLElement) {
+/* The anticipation, started on the click. See LIFT above for why it is written
+   to `scale` and why it drags a `translate` along with it. */
+function swell(node: HTMLImageElement, shot: Shot): Animation | null {
+  if (typeof node.animate !== "function") return null;
+  const back = (LIFT - 1) / 2;
+  return node.animate(
+    [
+      { scale: "1", translate: "0px 0px" },
+      {
+        scale: String(LIFT),
+        translate: `${(-back * shot.width).toFixed(2)}px ${(-back * shot.height).toFixed(2)}px`
+      }
+    ],
+    { duration: LIFT_MS, easing: EASE_CSS, fill: "forwards" }
+  );
+}
+
+function fly(shot: Shot, node: HTMLImageElement, lift: Animation | null, target: HTMLElement) {
   const to = target.getBoundingClientRect();
   if (!to.width || !to.height) return null;
+
+  /* Read before the lift is cancelled — cancelling it puts these back to their
+     unanimated values, and the whole point is to leave from where the card
+     actually is. `none` is what an untouched element reports. */
+  const held = getComputedStyle(node);
+  const fromScale = held.scale === "none" ? "1" : held.scale;
+  const fromShift = held.translate === "none" ? "0px 0px" : held.translate;
+  lift?.cancel();
 
   const scale = Math.max(shot.width / to.width, shot.height / to.height);
   const insetX = (to.width - shot.width / scale) / 2;
@@ -164,10 +221,24 @@ function fly(shot: Shot, node: HTMLImageElement, target: HTMLElement) {
       },
       { transform: "none", clipPath: `inset(0px 0px 0px 0px round ${endRadius}px)` }
     ],
-    { duration: ENTER_MS, easing: EASE, fill: "both" }
+    { duration: FLIGHT_MS, easing: EASE_CSS, fill: "both" }
   );
 
-  return { node, animation };
+  /* The lift, given back over exactly the length of the flight. The two run on
+     one curve against the same clock, so what the eye sees is a single motion
+     that happens to have begun before its destination existed. Ending at
+     identity is not decoration: the flight's own last keyframe is `transform:
+     none`, which only lands on the destination if nothing else is still
+     scaling the node. */
+  const unwind = node.animate(
+    [
+      { scale: fromScale, translate: fromShift },
+      { scale: "1", translate: "0px 0px" }
+    ],
+    { duration: FLIGHT_MS, easing: EASE_CSS, fill: "both" }
+  );
+
+  return { node, animation, unwind };
 }
 
 /* Runs on the arriving page. `getTarget` is deferred because the element it
@@ -200,7 +271,7 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
     };
 
     const land = (target: HTMLElement) => {
-      const flight = fly(claimed.shot, claimed.node, target);
+      const flight = fly(claimed.shot, claimed.node, claimed.lift, target);
       if (!flight) {
         airborne = false;
         return claimed.node.remove();
@@ -220,7 +291,10 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
       /* A flight aims at where its destination is standing now. Scroll the pane
          and the destination walks out from under it, so the first sign of a
          hand on the wheel cuts the flight to its landing. */
-      const interrupt = () => flight.animation.finish();
+      const interrupt = () => {
+        flight.animation.finish();
+        flight.unwind.finish();
+      };
       window.addEventListener("wheel", interrupt, { once: true, passive: true });
       window.addEventListener("touchstart", interrupt, { once: true, passive: true });
 
@@ -242,6 +316,7 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
         window.removeEventListener("wheel", interrupt);
         window.removeEventListener("touchstart", interrupt);
         flight.animation.cancel();
+        flight.unwind.cancel();
         reveal();
       };
     };

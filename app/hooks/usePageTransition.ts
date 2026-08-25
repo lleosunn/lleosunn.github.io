@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { animate } from "motion";
+import { EASE, REVEAL_S, RISE } from "../lib/motion";
 import { warm } from "../lib/preload";
 import { hasPendingHero } from "./useHeroFlight";
 
@@ -27,15 +28,6 @@ import { hasPendingHero } from "./useHeroFlight";
  * from, so useBootReveal plays them in with everything else.)
  */
 
-/* Geometry and clock, shared with the opening in useBootReveal.
- *
- * These are the reference's numbers, lifted from gabrielbeaugonin.com: a 28px
- * rise over 720ms on a curve that leaves the mark almost immediately and then
- * spends the rest of its time settling. What used to be here was less than half
- * as far over two thirds the time, which is a briskness the eye reads as a
- * flick rather than a move. The slowness is the whole effect. */
-export const RISE = 28;
-
 /* The rise is written to `translate`, the standalone CSS property, and not to
    `transform`. Two of the things that have to move already carry a transform of
    their own — the dots are centred with translateY(-50%), and a card mid-flight
@@ -43,8 +35,6 @@ export const RISE = 28;
    dots slide from the middle of the viewport to the top and snap back when the
    animation clears. `translate` composes ahead of `transform` instead, so the
    rise adds to whatever the element was already doing. */
-export const REVEAL_S = 0.72;
-export const EASE_REVEAL: [number, number, number, number] = [0.32, 0, 0, 1];
 
 const EXIT_S = 0.24;
 const EXIT_STAGGER = 0.018;
@@ -101,7 +91,7 @@ export function rise(
     flat
       ? { opacity: [0, 1], translate: ["0px 0px", "0px 0px"] }
       : { opacity: [0, 1], translate: ["0px " + RISE + "px", "0px 0px"] },
-    { duration: REVEAL_S, delay: rung(stagger), ease: EASE_REVEAL }
+    { duration: REVEAL_S, delay: rung(stagger), ease: EASE }
   );
 
   /* A frame after the finish, not on it. Motion commits each animation's final
