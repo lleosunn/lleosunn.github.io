@@ -58,10 +58,14 @@ const WHEEL_MIN = 20;
 /* How long the wheel is deaf after a step, as a function of how hard that step
    was pushed. This is the whole rate control, and it is inverted on purpose: a
    hard flick (a big delta) unlocks sooner and therefore travels further, a
-   gentle notch waits the better part of a fifth of a second and moves one card.
-   Speed of gesture becomes distance travelled without the deck ever tracking a
-   gesture's magnitude directly. */
-const wheelCooldown = (delta: number) => Math.max(30, 165 - delta);
+   gentle notch waits about an eighth of a second and moves one card. Speed of
+   gesture becomes distance travelled without the deck ever tracking a
+   gesture's magnitude directly.
+
+   The base is the dial: raise it and the deck holds still harder, lower it and
+   a flick carries further. The reference's is 165; this is a touch quicker on
+   a trackpad, where the per-event deltas are small and so the wait was long. */
+const wheelCooldown = (delta: number) => Math.max(30, 130 - delta);
 
 /* --- Pointer ------------------------------------------------------------ */
 
@@ -75,9 +79,13 @@ const DRAG_STEP = 45;
    this far — the flick that is over before it is a drag. */
 const FLICK_MIN = 30;
 
-/* Floor between two steps from a pointer. Without it a fast swipe delivers its
-   45px thresholds faster than the spring can show them and the ring blurs. */
-const STEP_FLOOR = 170;
+/* Floor between two steps from a pointer, and the dial that decides how far a
+   thumb flick carries. A swipe is over in about a quarter of a second, so this
+   — not DRAG_STEP — is what caps it: at 170 a flick got two cards no matter how
+   hard it was thrown, because the third threshold arrived while the deck was
+   still deaf. Below roughly 90 the steps outrun what the spring can show and
+   the ring blurs, which is the floor's whole reason for existing. */
+const STEP_FLOOR = 110;
 
 /* --- Keyboard ----------------------------------------------------------- */
 
