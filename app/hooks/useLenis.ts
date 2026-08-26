@@ -1,5 +1,6 @@
 import { useEffect, useRef, type RefObject } from "react";
 import Lenis from "lenis";
+import { GLIDE } from "../lib/motion";
 
 /* Smooth scrolling for the right pane.
  *
@@ -43,9 +44,7 @@ export function useLenis(scrollerRef: RefObject<HTMLElement | null>) {
          before, and 0.7 is not a compromise between two feels; it is a third
          one that matches nothing. */
       duration: touch ? 0 : 1.2,
-      easing: touch
-        ? (t: number) => 1 - Math.pow(1 - t, 3)
-        : (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      easing: touch ? (t: number) => 1 - Math.pow(1 - t, 3) : GLIDE,
       smoothWheel: true,
       /* One notch is one notch, both here and on the reference. Scaling it up
          was meant to make a long project page shorter to get down; what it

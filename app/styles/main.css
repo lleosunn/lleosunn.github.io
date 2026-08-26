@@ -692,6 +692,45 @@ button {
   filter: brightness(0.86) contrast(1.03);
 }
 
+/* A YouTube embed has no intrinsic size, so an unstyled iframe collapses to the
+   300x150 the spec gives it. The ratio is declared on the figure rather than the
+   iframe so the frame is drawn — and clipped — around a box that exists before
+   the third-party document inside it has loaded anything. */
+.video-embed {
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.video-embed iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Two portrait clips of the same thing read as one exhibit, so they share a row
+   instead of stacking into two full-height columns. The row is capped short of
+   the 780px measure on purpose: at the full width a 9:16 frame stands taller
+   than anything else on the page, and a pair of them turns a section of prose
+   into a wall of video. */
+.video-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 26px auto;
+  max-width: 560px;
+}
+
+.video-pair figure {
+  margin: 0;
+}
+
+.video-embed--portrait {
+  aspect-ratio: 9 / 16;
+}
+
 /* Diagrams are authored inline as SVG so they inherit the page's type and its
    greys, and redraw correctly the instant the theme flips. Every value comes
    from a token; the markup carries no colour of its own. */
@@ -1080,7 +1119,10 @@ button {
      top-left corner, so that corner has to be the origin, not the centre. */
   transform-origin: 0 0;
   pointer-events: none;
-  will-change: transform, clip-path;
+  /* `translate` as well as `transform`: a copy that took off from a page which
+     had been scrolled rides that scroll back down on the standalone property
+     while the morph runs on the compound one. */
+  will-change: translate, transform, clip-path;
 }
 
 /* --- Mobile -------------------------------------------------------------- */

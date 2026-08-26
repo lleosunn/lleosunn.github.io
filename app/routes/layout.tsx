@@ -22,7 +22,7 @@ import {
 } from "../hooks/usePageTransition";
 import { useLenis } from "../hooks/useLenis";
 import { useTheme } from "../hooks/useTheme";
-import { EASE, PAGE_S } from "../lib/motion";
+import { EASE, GLIDE, PAGE_S } from "../lib/motion";
 import { projectBySlug, projects } from "../lib/projects";
 import { site } from "../lib/site";
 
@@ -140,6 +140,37 @@ function ghostStyle(frame: PaneFrame): CSSProperties {
   };
 }
 
+/* And on its way out it rides back to its own top.
+ *
+ * Closing a project you have read to the bottom of used to cut from wherever
+ * you had got to, which says the page was discarded. The reference sends it
+ * home instead — `lenis.scrollTo(0, { duration: Un, force: true })` on the
+ * click, with the navigation fired on the next line rather than waiting for it,
+ * so the page is still travelling back to its first screen while it fades and
+ * while the card lifts off it. One move, not two in a row.
+ *
+ * There is no scrolling left to do by the time this runs: the pane belongs to
+ * the route that is arriving, and what is left of the old one is a photograph.
+ * So the scroll is reproduced rather than performed. ghostStyle grew the box
+ * upwards by the distance that had been scrolled and clipped it back to the
+ * pane; sliding it down by that same distance while the clip walks the other
+ * way puts the page back at its top behind a window that never moves.
+ *
+ * Both properties are written from one value, in one callback, because they are
+ * two halves of a single number — a frame in which the box has moved and the
+ * clip has not is a frame in which the pane appears to grow. */
+function scrollHome(pane: HTMLElement, distance: number) {
+  pane.style.willChange = "translate, clip-path";
+  return animate(0, distance, {
+    duration: PAGE_S,
+    ease: GLIDE,
+    onUpdate: (y) => {
+      pane.style.translate = `0px ${y}px`;
+      pane.style.clipPath = `inset(${distance - y}px 0px ${y}px 0px)`;
+    }
+  });
+}
+
 export default function AppLayout() {
   const { pathname } = useLocation();
   const outlet = useOutlet();
@@ -176,11 +207,12 @@ export default function AppLayout() {
     }
   }
 
-  /* The page that is leaving does it in two different ways at once, because the
-     two halves of it are leaving for different reasons. The pane is a picture of
-     somewhere the reader no longer is, and it fades. The heading is a label on a
-     slot that still exists and is about to say something else, so it rolls out
-     of the box it lives in while the new one rolls in — see rollIdentity. */
+  /* The page that is leaving does it several ways at once, because its parts
+     are leaving for different reasons. The pane is a picture of somewhere the
+     reader no longer is: it fades, and it rides back to its own top while it
+     does — see scrollHome. The heading is a label on a slot that still exists
+     and is about to say something else, so it rolls out of the box it lives in
+     while the new one rolls in — see rollIdentity. */
   useEffect(() => {
     if (!ghost) return;
     const drop = () => setGhost((current) => (current === ghost ? null : current));
@@ -189,19 +221,23 @@ export default function AppLayout() {
     const fade = pane
       ? animate(pane, { opacity: [1, 0] }, { duration: PAGE_S, ease: EASE })
       : null;
+    const back =
+      pane && ghost.right?.scrollTop ? scrollHome(pane, ghost.right.scrollTop) : null;
     const heading = rollIdentity(leftGhostRef.current, {
       from: ghost.home ? "above" : "below",
       out: true
     });
     heading.play();
 
-    /* Both run for exactly PAGE_S, so one clock retires the copy. A timer
-       rather than the fade's promise because there is not always a pane to
-       fade — /resume leaving for home is a heading and nothing else. */
+    /* Every one of them runs for exactly PAGE_S, so one clock retires the
+       copy. A timer rather than the fade's promise because there is not always
+       a pane to fade — /resume leaving for home is a heading and nothing
+       else. */
     const timer = setTimeout(drop, PAGE_S * 1000);
     return () => {
       clearTimeout(timer);
       fade?.stop();
+      back?.stop();
       heading.stop();
     };
   }, [ghost]);
@@ -380,7 +416,12 @@ export default function AppLayout() {
             onClick={(event) => {
               if (!isPlainClick(event) || isHome) return;
               event.preventDefault();
-              go("/", () => captureHero(projectHero()));
+              /* The lift is what the pane is about to travel back up, and the
+                 copy has to know: it is the source's seat at the top of the
+                 page that the flight has to end up measured from. */
+              go("/", () =>
+                captureHero(projectHero(), scrollerRef.current?.scrollTop ?? 0)
+              );
             }}
           >
             <HomeIcon />

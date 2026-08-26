@@ -27,6 +27,20 @@ export const EASE_CSS = "cubic-bezier(0.32, 0, 0, 1)";
    and the page curve's long tail would make them feel late. */
 export const EASE_OUT_CUBIC: [number, number, number, number] = [0.215, 0.61, 0.355, 1];
 
+/* The wheel's curve, and the one large move on this site that is not EASE.
+ *
+ * Lenis's own expo-out. It leaves at full speed and spends the rest of the
+ * second arriving, which is what a notch of a wheel feels like; the page curve,
+ * which starts gently, is not — a scroll that eases in reads as the page being
+ * dragged rather than thrown.
+ *
+ * It lives here rather than inside useLenis because a page on its way out rides
+ * it too. The reference sends the page you are closing back to its own top with
+ * an ordinary lenis.scrollTo, which is to say: the site's scrolling curve, on
+ * the page clock — its `duration` there is Un, the same PAGE_S as the fade the
+ * scroll is happening underneath. */
+export const GLIDE = (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t));
+
 /* Its `Un` — the master duration. A navigation, a hero morph and a route
    arriving all run exactly this long, which is why they read as one event
    rather than three that happen to overlap. Seconds for motion's API,

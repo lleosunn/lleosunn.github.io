@@ -1,5 +1,6 @@
 import { useEffect, type RefObject } from "react";
-import { EASE_CSS, PAGE_MS } from "../lib/motion";
+import { animate } from "motion";
+import { EASE_CSS, GLIDE, PAGE_MS, PAGE_S } from "../lib/motion";
 
 /* The card that flies between the home deck and a project page.
  *
@@ -52,6 +53,12 @@ export interface Shot {
   height: number;
   radius: number;
   position: string;
+  /* How far the page under the copy is about to slide back down as it rides to
+     its own top (routes/layout.tsx). `top` is already the seat the source will
+     be sitting in once that is over — which is the one the flight has to be
+     measured from, because it is where the flight ends — and the copy is held
+     this far above it to begin with and let down on the scroll's own curve. */
+  lift: number;
 }
 
 interface Pending {
@@ -65,7 +72,7 @@ interface Pending {
 
 let pending: Pending | null = null;
 
-function capture(el: Element | null | undefined): Shot | null {
+function capture(el: Element | null | undefined, lift: number): Shot | null {
   if (!el) return null;
   const box = el.getBoundingClientRect();
   if (!box.width || !box.height) return null;
@@ -82,12 +89,13 @@ function capture(el: Element | null | undefined): Shot | null {
     : 1;
   return {
     src,
-    top: box.top,
+    top: box.top + lift,
     left: box.left,
     width: box.width,
     height: box.height,
     radius: (parseFloat(style.borderTopLeftRadius) || 0) * drawn,
-    position: style.objectPosition
+    position: style.objectPosition,
+    lift
   };
 }
 
@@ -150,21 +158,28 @@ export function discardHero() {
 }
 
 /* Called on the click that starts a navigation, before React has torn anything
-   down. Silently does nothing if there is no image to hand over. */
-export function captureHero(el: Element | null | undefined) {
+   down. Silently does nothing if there is no image to hand over.
+
+   `lift` is how far the pane the source sits in is about to travel back to its
+   own top; zero everywhere the page that is leaving was not scrolled. */
+export function captureHero(el: Element | null | undefined, lift = 0) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   discardHero();
-  const shot = capture(el);
+  const shot = capture(el, lift);
   if (!shot) return;
 
   /* Standing exactly where the source is, so the swap from real card to copy
-     is not visible even though it happens on the click itself. */
+     is not visible even though it happens on the click itself. The seat is the
+     one the source is travelling towards, so being where it is now means being
+     held a lift above it — on `translate`, which the flight then lets down
+     without disturbing the `transform` that carries the morph. */
   const node = makeFlyer(shot);
   node.style.top = `${shot.top}px`;
   node.style.left = `${shot.left}px`;
   node.style.width = `${shot.width}px`;
   node.style.height = `${shot.height}px`;
   node.style.borderRadius = `${shot.radius}px`;
+  if (lift) node.style.translate = `0px ${-lift}px`;
   document.body.appendChild(node);
 
   const source = coverFor(el!);
@@ -205,7 +220,22 @@ function fly(shot: Shot, node: HTMLImageElement, target: HTMLElement) {
     { duration: FLIGHT_MS, easing: EASE_CSS, fill: "both" }
   );
 
-  return { node, animation };
+  /* The page underneath is riding back to its own top over the same second, and
+     a copy that ignored that would pull away from the hole it came out of. The
+     ride is a separate property from the morph — `translate` composes ahead of
+     `transform` rather than replacing it — so the two can keep their own curves:
+     the copy is let down on the scroll's, and carried to the card on the
+     page's. Both land on the same frame, which is the only part that has to
+     agree. */
+  const ride = shot.lift
+    ? animate(
+        node,
+        { translate: [`0px ${-shot.lift}px`, "0px 0px"] },
+        { duration: PAGE_S, ease: GLIDE }
+      )
+    : null;
+
+  return { node, animation, ride };
 }
 
 /* Runs on the arriving page. `getTarget` is deferred because the element it
@@ -260,6 +290,7 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
          hand on the wheel cuts the flight to its landing. */
       const interrupt = () => {
         flight.animation.finish();
+        flight.ride?.complete();
       };
       window.addEventListener("wheel", interrupt, { once: true, passive: true });
       window.addEventListener("touchstart", interrupt, { once: true, passive: true });
@@ -282,6 +313,7 @@ export function useHeroLanding(getTarget: () => HTMLElement | null, key: string)
         window.removeEventListener("wheel", interrupt);
         window.removeEventListener("touchstart", interrupt);
         flight.animation.cancel();
+        flight.ride?.stop();
         reveal();
       };
     };
