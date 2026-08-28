@@ -1,6 +1,6 @@
 ---
 title: Neural Combinatorial Optimization
-description: Teaching a network to help a 30-year-old heuristic solve vehicle routing — and finding out where that helps and where it doesn't.
+description: Exploring whether a learned policy can help a decades-old heuristic solve vehicle-routing problems—and where that approach falls short.
 author: Leo Sun
 date: 2026-05-10
 end_date: 2026-05-31
@@ -13,17 +13,17 @@ image:
   alt: Animated CVRP tour being optimized over successive trials
 ---
 
-## The question
-The Capacitated Vehicle Routing Problem asks for the cheapest set of delivery routes from a depot to a hundred customers, with every vehicle respecting a load limit. It is NP-hard, and the strongest practical answer to it is not a neural network — it is LKH, a Lin-Kernighan-Helsgaun local search that has been sharpened for three decades.
+## Overview
+The Capacitated Vehicle Routing Problem (CVRP) adds a load limit to the standard vehicle-routing problem. Given a depot, a fleet of identical vehicles, and a set of customers awaiting deliveries, the goal is to minimize the fleet's total travel distance. Every route must begin and end at the depot, every customer must be served exactly once, and no vehicle can exceed its capacity. CVRP is a generalization of the traveling salesman problem: TSP is the special case with one vehicle and no binding capacity constraint. It also inherits TSP's difficulty—CVRP is NP-hard.
 
-So the question I spent five months on was not *can a network solve CVRP*. It was narrower and more interesting: **can a learned policy make LKH itself better?**
+LKH is Keld Helsgaun's implementation of the local-search method introduced by Lin and Kernighan in 1973. LKH was released in 2000 and extended to capacity-constrained routing in 2017; I benchmarked against version 3.0.13.
 
-LKH improves a tour by repeatedly wrecking it a little and repairing it. The wrecking step — the perturbation — is random. That randomness is the obvious place to put a network, and the loop it sits in looks like this.
+The question I spent five months exploring was **Can a learned policy make LKH itself better?**
 
-[View the code on GitHub](https://github.com/lleosunn/nco)
+LKH improves a tour by repeatedly perturbing it and then repairing the damage. LKH's loop looks like this:
 
 <figure>
-<svg class="dg" viewBox="0 0 760 212" role="img" aria-label="The improvement loop: current best tour A is perturbed into B by the policy, LKH repairs B into C, C is merged into a new best D, and the loop repeats.">
+<svg class="dg" viewBox="0 -62 760 274" role="img" aria-label="LKH's improvement loop: current best tour A is perturbed into B, local search repairs B into C, C is merged with A to give D, and D replaces A if it is cheaper.">
   <defs>
     <marker id="loop-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
       <path class="head" d="M 0 0 L 10 5 L 0 10 z"/>
@@ -34,9 +34,9 @@ LKH improves a tour by repeatedly wrecking it a little and repairing it. The wre
   <text class="t-tag t-mut" x="24" y="68">A</text>
   <text class="t-sm t-mid" x="80" y="94">current best tour</text>
 
-  <rect class="box box--key" x="210" y="46" width="140" height="66" rx="8"/>
+  <rect class="box" x="210" y="46" width="140" height="66" rx="8"/>
   <text class="t-tag t-mut" x="224" y="68">B</text>
-  <text class="t-sm t-mid t-key" x="280" y="94">perturbed tour</text>
+  <text class="t-sm t-mid" x="280" y="94">perturbed tour</text>
 
   <rect class="box" x="410" y="46" width="140" height="66" rx="8"/>
   <text class="t-tag t-mut" x="424" y="68">C</text>
@@ -44,95 +44,45 @@ LKH improves a tour by repeatedly wrecking it a little and repairing it. The wre
 
   <rect class="box" x="610" y="46" width="140" height="66" rx="8"/>
   <text class="t-tag t-mut" x="624" y="68">D</text>
-  <text class="t-sm t-mid" x="680" y="94">merge, new best</text>
+  <text class="t-sm t-mid" x="680" y="94">merged tour</text>
 
   <path class="link" d="M 152 79 L 204 79" marker-end="url(#loop-head)"/>
   <path class="link" d="M 352 79 L 404 79" marker-end="url(#loop-head)"/>
   <path class="link" d="M 552 79 L 604 79" marker-end="url(#loop-head)"/>
 
-  <text class="t-tag t-mid t-key" x="178" y="36">POLICY</text>
-  <text class="t-tag t-mid t-mut" x="378" y="36">LKH</text>
+  <text class="t-tag t-mid t-mut" x="178" y="36">PERTURB</text>
+  <text class="t-tag t-mid t-mut" x="378" y="36">LOCAL SEARCH</text>
   <text class="t-tag t-mid t-mut" x="578" y="36">MERGE</text>
 
+  <path class="link" d="M 80 44 L 80 -20 Q 80 -32 92 -32 L 628 -32 Q 640 -32 640 -20 L 640 40" marker-end="url(#loop-head)"/>
+  <text class="t-sm t-mid t-mut" x="360" y="-42">the merge reads A too</text>
+
   <path class="link link--dash" d="M 680 114 L 680 156 Q 680 168 668 168 L 92 168 Q 80 168 80 156 L 80 122" marker-end="url(#loop-head)"/>
-  <text class="t-sm t-mid t-mut" x="380" y="163">next trial</text>
+  <text class="t-sm t-mid t-mut" x="380" y="163">D replaces A only if it is cheaper</text>
 
-  <text class="t-sm t-mid t-mut" x="380" y="200">the policy owns one arrow; the reward is cost(A) − cost(D)</text>
+  <text class="t-sm t-mid t-mut" x="380" y="200">one lap is one trial</text>
 </svg>
-<figcaption>Only the first arrow is learnable. LKH keeps ownership of feasibility, repair, and local search.</figcaption>
 </figure>
 
 ---
 
-## Teaching the network what LKH does
-Before learning to perturb, I tried the simpler thing: learn to imitate LKH's improvements outright.
+## Imitation Learning
+LKH generates its own training data. Every improvement trial produces a tour before the trial and a better tour after it, so a single solver run is a stream of labeled examples showing what a good move looks like. The first approach I tried was the direct one: train a network to imitate those moves.
 
-I generated CVRP instances with RL4CO's `CVRPGenerator` — 100 customers, 1000 improvement trials per run — and ran LKH on them with tracking enabled. Parsing those tracking files gives a stream of before/after tour pairs: the tour LKH held at trial *t*, and the better tour it held at *t+1*. That is a supervision signal for free.
+### Building the dataset
+I generated 100-customer CVRP instances with RL4CO's `CVRPGenerator` and ran LKH on each for 1,000 improvement trials with tracking enabled. Parsing the tracking logs yields before-and-after pairs: the tour LKH held at trial *t*, and the improved tour it held at trial *t+1*.
 
-Each pair became a training example: tours as tensors, an adjacency matrix per solution, and a label marking which node connections changed between before and after. The model is a hierarchical CVRP policy — an N2S-style encoder over node and edge features, three layers of self-attention, and a decoder that emits a tour, with both greedy and sampling decode modes.
+Each pair became a training example containing tensor representations of both tours, an adjacency matrix for each solution, and labels identifying which node connections changed between them.
 
-Getting it to overfit a single instance worked early and confirmed the plumbing. The interesting part was what happened when it met LKH inside the search loop.
+### The model
+The policy is a hierarchical CVRP model. An N2S-style encoder processes node and edge features, three self-attention layers model the relationships between them, and a decoder produces a complete tour using either greedy or sampled decoding.
 
----
+The model quickly overfit a single instance, confirming that the training pipeline worked. But offline accuracy only shows that a model can reproduce patterns in its training data. The real test is online performance: does LKH improve when the network becomes part of its search loop?
 
-## Two very different ways to change a tour
-This distinction turned out to explain nearly every result that followed, so it's worth drawing.
+### Putting it inside the solver
+Answering that question required modifying LKH itself. I added a neural callback to the C source—`nn_callback.o` and `FindTourWithNN.o`—so LKH could send its current tour to the network at each trial and receive a proposal in return. If the proposal was cheaper than the incumbent, LKH accepted it. Otherwise, it fell back to its standard perturbation and merge process.
 
-<figure>
-<svg class="dg" viewBox="0 0 760 290" role="img" aria-label="Left: LKH removes two tour edges and adds two, leaving the rest intact. Right: the network embeds all nodes, applies self-attention, scores an adjacency matrix and decodes a complete new tour.">
-  <defs>
-    <marker id="arch-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path class="head" d="M 0 0 L 10 5 L 0 10 z"/>
-    </marker>
-  </defs>
-
-  <text class="t-sm t-mid t-key" x="178" y="20">LKH · edits</text>
-  <text class="t-sm t-mid t-key" x="582" y="20">Network · rebuilds</text>
-
-  <line class="rule" x1="380" y1="34" x2="380" y2="268"/>
-
-  <path class="link link--dash" d="M 100 110 L 280 216"/>
-  <path class="link link--dash" d="M 280 110 L 100 216"/>
-  <path class="link" d="M 100 110 L 280 110" stroke-width="2.5"/>
-  <path class="link" d="M 100 216 L 280 216" stroke-width="2.5"/>
-
-  <circle class="node" cx="100" cy="110" r="6"/>
-  <circle class="node" cx="280" cy="110" r="6"/>
-  <circle class="node" cx="100" cy="216" r="6"/>
-  <circle class="node" cx="280" cy="216" r="6"/>
-
-  <text class="t-tag t-mid t-mut" x="190" y="96">ADDED</text>
-  <rect class="knock" x="146" y="153" width="88" height="18" rx="2"/>
-  <text class="t-tag t-mid t-mut" x="190" y="167">REMOVED</text>
-  <text class="t-sm t-mid t-mut" x="190" y="262">two edges out, two in —</text>
-  <text class="t-sm t-mid t-mut" x="190" y="278">the rest of the tour survives</text>
-
-  <rect class="box" x="430" y="46" width="304" height="34" rx="6"/>
-  <text class="t-sm t-mid" x="582" y="68">node + edge embeddings</text>
-  <rect class="box" x="430" y="102" width="304" height="34" rx="6"/>
-  <text class="t-sm t-mid" x="582" y="124">3 × self-attention</text>
-  <rect class="box" x="430" y="158" width="304" height="34" rx="6"/>
-  <text class="t-sm t-mid" x="582" y="180">adjacency scores</text>
-  <rect class="box box--key" x="430" y="214" width="304" height="34" rx="6"/>
-  <text class="t-sm t-mid t-key" x="582" y="236">decode a whole new tour</text>
-
-  <path class="link" d="M 582 82 L 582 96" marker-end="url(#arch-head)"/>
-  <path class="link" d="M 582 138 L 582 152" marker-end="url(#arch-head)"/>
-  <path class="link" d="M 582 194 L 582 208" marker-end="url(#arch-head)"/>
-
-  <text class="t-sm t-mid t-mut" x="582" y="279">every edge is decided again from scratch</text>
-</svg>
-<figcaption>LKH is edit-based; the network is generative. They are not doing the same job, even when they are pointed at the same tour.</figcaption>
-</figure>
-
----
-
-## Putting the network inside the solver
-Imitating LKH offline is only half a claim. The real test is online: does the solver get better when the network is wired into its loop?
-
-That meant patching LKH itself. I added a neural callback to the C source — `nn_callback.o` and `FindTourWithNN.o` — so that at each trial LKH hands its current tour to the network and takes back a proposal. If the proposal is cheaper than the incumbent, LKH accepts it; if not, LKH falls back to its own perturbation and merges as usual.
-
-An early version accepted the network's tour unconditionally, which produced a bizarre sawtooth in every plot. Fixing the accept rule cleaned that up, and on a handful of instances the network genuinely started winning.
+An early version accepted every network proposal unconditionally, producing a strange sawtooth pattern in the results. Correcting the acceptance rule removed that artifact, and the network began to outperform LKH on a few instances.
 
 <div class="table-scroll">
 <table class="data-table">
@@ -151,15 +101,15 @@ An early version accepted the network's tour unconditionally, which produced a b
   </tbody>
 </table>
 </div>
-<p class="table-note">Final tour cost after 1000 trials; lower is better, bold is the winner. Three of eight — encouraging enough to be misleading.</p>
+<p class="table-note">Final tour cost after 1,000 trials. Lower is better, and the winning result is bold. The network won three of eight instances—promising, but ultimately misleading.</p>
 
-Eight instances is not evidence. Running the same comparison across a hundred is, and the picture got considerably less flattering.
+Eight instances were not enough to support a conclusion. Across 100 instances, the result was much less flattering.
 
 <figure>
   <div class="plate">
     <img src="/assets/img/20260510NCO/cost-gap-fallback.png" alt="Two histograms over 100 instances: cost gap between network and LKH centred slightly above break-even at a mean of 0.39 percent, and LKH fallback rate centred at 23.5 percent">
   </div>
-  <figcaption>Left: cost gap over 100 instances, mean +0.39% (positive means the network's run finished worse). Right: how often LKH had to rescue a bad proposal — 23.5% of trials on average.</figcaption>
+  <figcaption>Left: cost gap across 100 instances, with a mean of +0.39% (positive means the network performed worse). Right: LKH had to reject a network proposal and fall back to its own perturbation in 23.5% of trials on average.</figcaption>
 </figure>
 
 <div class="stat-row">
@@ -168,7 +118,8 @@ Eight instances is not evidence. Running the same comparison across a hundred is
   <div class="stat"><div class="stat__value">23.5%</div><div class="stat__label">of trials fell back to LKH</div></div>
 </div>
 
-I trained several variants to try to close that gap. A dual setup used one model on early trials and another on late ones, on the theory that improving a rough tour and polishing a good one are different skills. A single "wide" model trained across trials 200–1000 covered both. And a refinement variant fed the network its own output three times before handing off.
+### Trying to close the gap
+I trained three variants. A dual-model setup used one policy during early trials and another during later trials, based on the idea that improving a rough tour and polishing a strong one require different skills. A single "wide" model trained across trials 200–1,000 covered both phases. A third variant repeatedly fed the network its own output, refining the tour three times before returning it to LKH.
 
 <figure>
 <svg class="dg" viewBox="0 0 760 206" role="img" aria-label="Win, tie and loss counts out of 100 instances. Wide NN one iteration: 31 wins, 4 ties, 65 losses. Dual NN: 31 wins, 1 tie, 68 losses. Wide NN with three-iteration refine: 25 wins, 0 ties, 75 losses.">
@@ -199,136 +150,70 @@ I trained several variants to try to close that gap. A dual setup used one model
   <text class="bar-num t-mid" x="273" y="177">25</text>
   <text class="bar-num bar-num--out t-mid" x="549" y="177">75</text>
 </svg>
-<figcaption>None of the three variants crossed the line. Refinement — the one that leaned hardest on the network — was clearly the worst.</figcaption>
+<figcaption>None of the three variants beat the baseline overall. The refinement model—which relied most heavily on the network—performed the worst.</figcaption>
 </figure>
 
 ---
 
 ## Why it lost
-The failures were more informative than the wins, and they were specific.
+The failures were ultimately more informative than the wins, and they pointed to several specific problems.
 
-**Refeeding is out-of-distribution.** The three-iteration refine variant was the biggest disappointment and the clearest lesson. The network was trained on pairs where the input was an *LKH-perturbed* tour. Its own output is not that. The second pass is already operating on data it never saw in training, and the third is worse — which is exactly what the 25/0/75 line shows.
+**Repeated refinement creates a distribution shift.** The three-iteration refinement model delivered the clearest lesson. It was trained on pairs whose inputs were *LKH-perturbed* tours, but its own outputs do not follow that same distribution. By the second pass, the model is already processing data unlike anything it saw during training; the third pass compounds the problem. Its 25/0/75 win-tie-loss record reflects that mismatch.
 
-**Fallback stayed flat.** If the network were slowly learning, LKH would rescue it less often as trials went on. It doesn't.
+**The fallback rate stayed flat.** If the network's proposals improved over time, LKH should have needed to reject them less often. It did not.
 
 <figure>
   <div class="plate">
     <img src="/assets/img/20260510NCO/fallback-vs-trials.png" alt="LKH fallback count per trial across 1000 trials, oscillating around a flat mean of 25.1 out of 100 with no downward drift">
   </div>
-  <figcaption>Fallback count across 1000 trials, averaged over 100 instances. The mean sits at 25.1 and does not drift. The network is not degrading — it is simply not good enough, consistently.</figcaption>
+  <figcaption>Fallback count across 1,000 trials, averaged over 100 instances. The mean remains near 25.1 with no downward trend: the network is not getting worse, but it is also not getting better.</figcaption>
 </figure>
 
-**Sampling didn't rescue greedy decoding.** Decoding 8 samples and taking the best made things worse, not better. The model was trained for greedy decoding, and sampling picks nodes without looking ahead, which can walk into capacity violations that greedy avoids.
+**Sampling did not improve greedy decoding.** Generating eight samples and keeping the best one made performance worse. The model was trained with greedy decoding, while sampled decoding chooses nodes without looking ahead and can lead to capacity violations that the greedy policy avoids.
 
-**The two systems don't even represent a tour the same way.** The network treats the depot as node 0 and separates routes by repeating it. LKH creates depot *copies* — nodes 102, 103, 104 and so on. Every exchange crosses that translation, and it was a steady source of bugs.
+**The two systems represent tours differently.** The network uses node 0 as the depot and repeats it to separate routes. LKH instead creates depot *copies*—nodes 102, 103, 104, and so on. Every exchange between the two systems required a translation step, creating a persistent source of bugs.
 
-Underneath all four is the mismatch from the diagram above. Asking a network to emit a complete, capacity-feasible, 100-customer tour is an enormous ask, and it has to clear that bar on every single trial just to break even with a solver that only ever edits two edges at a time.
+All four problems trace back to the same architectural mismatch. Generating a complete, capacity-feasible tour for 100 customers is a much harder task than editing a few edges. The network had to meet that higher bar at every trial simply to compete with LKH.
 
 ---
 
 ## Pivoting: learn the perturbation, not the tour
-So I stopped asking the network for a finished tour and went back to the loop diagram. The policy only needs to own the first arrow — A to B. LKH is better at everything downstream, so let it keep that work.
+I stopped asking the network to produce a finished tour and returned to the original loop. The policy only needs to control the first step, from A to B. LKH is better at everything downstream, so it should keep doing that work.
 
-This inverts the integration. Online evaluation had LKH's C loop calling into Python; RL training needs Python's loop calling LKH.
-
-<div class="table-scroll">
-<table class="data-table">
-  <thead>
-    <tr><th></th><th>Online eval</th><th>RL training</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>Who drives</td><td>LKH's loop</td><td>Python's loop</td></tr>
-    <tr><td>Direction</td><td>C calls Python</td><td>Python calls C</td></tr>
-    <tr><td>Transport</td><td>shared memory, 1 process</td><td>files on disk, 2 processes</td></tr>
-    <tr><td>Latency</td><td>microseconds</td><td>~100–300 ms per call</td></tr>
-    <tr><td>Cost to build</td><td>patch LKH's C source</td><td>no C changes at all</td></tr>
-  </tbody>
-</table>
-</div>
-
-I built the second path: `lkh_wrapper.py` makes LKH callable from Python — writing `.par` files, running the binary as a subprocess, parsing `.tour` output, cleaning up its temp directories. `lkh_env.py` wraps that as an environment where `reset()` picks an instance and warms up a starting tour, and `step()` scores whatever tour the policy produced. Reward is simply `cost(A) − cost(D)`: how much better the solution got after the network's perturbation, LKH's repair, and the merge.
-
-I deliberately did not use a Gymnasium space here. The action is a variable-length sequence of node IDs forming a valid CVRP tour, which doesn't fit a fixed discrete or continuous space cleanly.
-
-The policy is initialized from the imitation model rather than from scratch — it already knows how to read a CVRP instance, encode a tour, and respect capacity, even though it was never trained to perturb. Training runs the network twice on the same input, once sampling and once greedy, and uses the difference as the advantage: if the sampled tour beat the greedy one, make those sampled actions more likely.
-
-Five unit tests cover the seams that actually break — tour format round-trips preserving every customer, the wrapper producing valid `.par` files and parsing results back, LKH never returning worse than its warm-up, rewards never going stale, and the environment's types staying consistent.
+Rather than starting from scratch, I initialized the policy with the imitation model. It already knew how to interpret a CVRP instance, encode a tour, and respect capacity constraints, even though it had never been trained to perturb. During training, the network processed each input twice: once with sampled decoding and once with greedy decoding. The reward difference became the advantage, so when the sampled tour outperformed the greedy tour, the policy increased the likelihood of those sampled actions.
 
 <figure>
   <div class="plate">
     <img src="/assets/img/20260510NCO/rl-reward-curves.png" alt="Four panels from the reinforcement learning run: rolling mean reward trending upward and crossing zero, mean reward by 1000-step bin turning positive after step 7000, rolling improvement rate climbing from 30 to 75 percent, and reward distributions for the first and last 1000 steps">
   </div>
-  <figcaption>10,000 steps of A→B perturbation training. Mean reward per 1000-step bin climbs from −7,763 to +3,525 and crosses zero around step 7,000; the share of steps that improved the tour rises from roughly 30% to 72.8%.</figcaption>
+  <figcaption>Over 10,000 steps of A→B perturbation training, the mean reward per 1,000-step bin rises from −7,763 to +3,525 and crosses zero around step 7,000. The share of steps that improve the tour climbs from roughly 30% to 72.8%.</figcaption>
 </figure>
 
-This is the most encouraging result in the project. The policy is measurably learning to perturb — improvement rate more than doubles, and mean reward goes from firmly negative to positive. It is still not beating LKH's own perturbation end to end, and the run is noisy, but it is the first time the learning signal pointed clearly in the right direction.
+This was the project's most encouraging result. The policy was measurably learning to perturb: its improvement rate more than doubled, and its mean reward moved from clearly negative to positive. The run was noisy, and the learned policy still did not beat LKH's own perturbation end to end, but it was the first experiment in which the learning signal moved decisively in the right direction.
 
 ---
 
 ## Neural Deconstruction Search
-The last idea shrank the action space further. Instead of emitting a perturbed tour at all, the network picks *which customers to remove* — sample M of them from the current best tour, let a greedy repair reinsert them, and hand the result to LKH.
+The final approach reduced the action space even further. Instead of generating a perturbed tour, the network selected *which customers to remove*. It sampled M customers from the current best tour, a greedy repair heuristic reinserted them, and the resulting tour went to LKH.
 
-That should be strictly easier to learn. The network decides only where to perturb, not how to rebuild, and greedy repair preserves most of the incumbent tour so the change stays local.
+In principle, this should be an easier problem to learn. The network decides only where to perturb, not how to reconstruct the tour, and greedy repair preserves most of the incumbent solution so each change remains local.
 
 <figure>
   <div class="plate">
     <img src="/assets/img/20260510NCO/nds-reward-drift.png" alt="Mean reward over NDS training drifting from a positive first-1000-step average of 3,738 down to a negative last-1000-step average of −2,917">
   </div>
-  <figcaption>It went the wrong way. The first 1,000 steps averaged +3,738; the last 1,000 averaged −2,917.</figcaption>
+  <figcaption>The reward moved in the wrong direction: the first 1,000 steps averaged +3,738, while the last 1,000 averaged −2,917.</figcaption>
 </figure>
 
-It didn't work. The reward drifts downward over training rather than up, and I ran out of semester before diagnosing why. My leading suspicion is the reward: it is raw LKH improvement rather than an advantage measured against a greedy baseline, so the policy is chasing a signal dominated by which instance it happened to draw.
+This approach did not work. The reward declined over training, and the semester ended before I could determine exactly why. My leading hypothesis is that the reward design was the problem: it measured raw LKH improvement rather than advantage over a greedy baseline. As a result, the signal may have been dominated by the difficulty of whichever instance the policy happened to sample.
 
 ---
 
-## Five months, in order
+## Reflections
+The headline result is negative, but it is a useful one.
 
-<figure>
-<svg class="dg" viewBox="0 0 760 196" role="img" aria-label="Timeline from January to May 2026: collect LKH trajectories, early and late two-model split, hundred-instance online validation, RL environment around LKH, then full-tour RL and neural deconstruction search.">
-  <line class="rule" x1="50" y1="104" x2="716" y2="104"/>
+**Generating an entire solution is the wrong division of labor.** A mature solver already enforces feasibility, repairs damage, and performs local search efficiently and reliably. Asking a network to reproduce that entire pipeline means competing with decades of solver development at every trial. A better approach is to let the network make one decision that the solver currently makes at random. The perturbation experiment—the only one whose learning curve clearly improved—supports that direction.
 
-  <circle class="node" cx="88" cy="104" r="5"/>
-  <text class="t-tag t-mid t-key" x="88" y="46">JAN</text>
-  <text class="t-sm t-mid t-mut" x="88" y="66">Collect LKH</text>
-  <text class="t-sm t-mid t-mut" x="88" y="81">trajectories</text>
+**Offline imitation accuracy says little about online usefulness.** The model clearly learned recognizable LKH behavior, yet it still lost 68 out of 100 online comparisons. The two metrics were nearly uncorrelated, and I relied on the offline result for longer than I should have.
 
-  <circle class="node--open" cx="236" cy="104" r="5"/>
-  <text class="t-tag t-mid t-key" x="236" y="136">FEB</text>
-  <text class="t-sm t-mid t-mut" x="236" y="156">Early + late</text>
-  <text class="t-sm t-mid t-mut" x="236" y="171">two-model split</text>
-
-  <circle class="node--open" cx="384" cy="104" r="5"/>
-  <text class="t-tag t-mid t-key" x="384" y="46">MAR</text>
-  <text class="t-sm t-mid t-mut" x="384" y="66">100-instance</text>
-  <text class="t-sm t-mid t-mut" x="384" y="81">online validation</text>
-
-  <circle class="node--open" cx="532" cy="104" r="5"/>
-  <text class="t-tag t-mid t-key" x="532" y="136">APR</text>
-  <text class="t-sm t-mid t-mut" x="532" y="156">RL environment</text>
-  <text class="t-sm t-mid t-mut" x="532" y="171">around LKH</text>
-
-  <circle class="node" cx="680" cy="104" r="5"/>
-  <text class="t-tag t-mid t-key" x="680" y="46">MAY</text>
-  <text class="t-sm t-mid t-mut" x="680" y="66">Full-tour RL,</text>
-  <text class="t-sm t-mid t-mut" x="680" y="81">then NDS</text>
-</svg>
-<figcaption>The arc runs from imitating the solver's output to learning one narrow decision inside it.</figcaption>
-</figure>
-
----
-
-## Takeaways
-The headline result is negative, and I think it is the useful kind.
-
-**Generating a whole solution is the wrong division of labour.** A mature solver enforces feasibility, repairs damage, and searches locally, all of it cheaply and correctly. Asking a network to reproduce all of that end-to-end means competing with thirty years of tuning on every single trial. Asking it to make one decision the solver currently makes at random is a far better bet — and the perturbation results are the only place the learning curve pointed the right way.
-
-**Offline imitation accuracy says almost nothing about online usefulness.** The model demonstrably learned recognizable LKH behaviour. It still lost 68 times out of 100 in deployment. The two metrics were close to uncorrelated, and I trusted the first one for longer than I should have.
-
-**The instrumentation was worth more than the model.** The flat fallback curve is what told me the network wasn't slowly improving. The refeed collapse is what identified the distribution shift. Without those, I would have kept tuning hyperparameters against a problem that wasn't in the hyperparameters.
-
-Technologies used:
-
-- Python, PyTorch, TensorDict
-- RL4CO and TorchRL-style routing environments
-- LKH 3.0.13, with a neural callback patched into its C source
-- CVRP data processing, imitation learning, and policy-gradient RL
+**The instrumentation was more valuable than the model.** The flat fallback curve showed that the network was not gradually improving, while the refinement model's collapse exposed the distribution shift. Without those diagnostics, I would have kept tuning hyperparameters even though the underlying problem was architectural.
