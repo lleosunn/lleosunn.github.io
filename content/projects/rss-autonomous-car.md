@@ -138,4 +138,4 @@ The biggest final-challenge lesson was that hardware noise and integration detai
 ---
 
 ## My Thoughts
-This has probably been my favorite class at MIT so far. In my opinion it is the best way to learn ROS 2 as well as foundational/classicial robotics concepts. This class is also a big time sink. I think I spent at least 20 hours in the Stata basement just working and debugging the car. Kinda upset that the class is only 12 units but I think it was still worth it in the end. I had a great learning experience and am also super grateful for my team.
+This has probably been my favorite class at MIT so far. In my opinion it is the best way to learn ROS 2 as well as foundational/classicial robotics concepts. This class is also a big time sink. I think I spent at least 20 hours a week in the Stata basement just working and debugging the car. Kinda upset that the class is only 12 units but I think it was still worth it in the end. I had a great learning experience and am also super grateful for my team.
