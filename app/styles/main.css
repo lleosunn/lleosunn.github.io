@@ -95,6 +95,11 @@
 
   /* PAGE_S. Everything a navigation moves runs exactly this long. */
   --dur-page: 1200ms;
+
+  /* REVEAL_S, and the twin of the same constant in app/lib/motion.ts. What the
+     title card takes to clear — the opening's clock rather than a navigation's,
+     because the panel is not a page leaving, it is a piece being played off. */
+  --dur-curtain: 720ms;
 }
 
 :root[data-theme="dark"] {
@@ -964,6 +969,152 @@ button {
 
 .lenis [data-lenis-prevent] {
   overscroll-behavior: contain;
+}
+
+/* --- The title card ------------------------------------------------------- */
+
+/* What the reader looks at while the site gets ready.
+ *
+ * This is the one piece of the opening that is not the reference's. On
+ * gabrielbeaugonin.com the first thing a visitor sees is an empty #root, held
+ * blank until its intro can play; here that wait is given something to be. The
+ * grammar is still the site's own — type that is clipped by its own box and
+ * slides out from under the edge of it rather than fading, one curve, one
+ * background — so the panel and the page it uncovers read as the same hand.
+ *
+ * Hidden by default and shown only while :root[data-load] is present, which is
+ * the same contract data-boot has and for the same reason: the attribute is set
+ * by an inline script before the first paint, so a reader who asked not to be
+ * animated at, or whose script never ran, never sees this at all.
+ *
+ * It leaves on the transition below rather than under anyone's animation, so
+ * that the two ways the attribute can come off — useBootReveal at the end of
+ * its schedule, or the head script's own safety timer — produce exactly the
+ * same fade. */
+
+.curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* Visibility waits out the fade rather than switching with it, or the panel
+     would vanish on the first frame and take the fade with it. */
+  transition: opacity var(--dur-curtain) var(--ease-page),
+    visibility 0s linear var(--dur-curtain);
+}
+
+/* Present at the first paint and for as long as the wait lasts. `transition:
+   none` so that arriving in this state is a state and not a move — there is
+   nothing behind the panel yet for it to have faded up from. */
+:root[data-load] .curtain {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: none;
+}
+
+/* Reduced motion never reaches here: the attribute is not set. The rule is
+   worth keeping anyway for a reader who turns the preference on mid-session,
+   and for the printed page. */
+@media (prefers-reduced-motion: reduce) {
+  .curtain {
+    display: none;
+  }
+}
+
+.curtain__inner {
+  /* The name and the rule under it are one column, sized by the name — a flex
+     item is fit-content wide, so the rule spans the word and nothing else. */
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--gutter);
+}
+
+/* The same clip the identity's lines live in — see .identity__mask. Padding at
+   the foot and taken back out of the layout, so descenders are not shaved off
+   against the edge the type slides past. */
+.curtain__mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 8px;
+  margin-bottom: -8px;
+}
+
+.curtain__word {
+  display: block;
+  margin: 0;
+  font-size: clamp(1.6rem, 2.55vw, 2.6rem);
+  font-weight: var(--weight-title);
+  line-height: 1.1;
+  letter-spacing: -0.021em;
+  white-space: nowrap;
+}
+
+/* The wait, made visible. Grown from its left edge with the standalone `scale`
+   property: useBootReveal writes to it every frame, and `transform` would be
+   the wrong place to write even here, where nothing else is competing for it —
+   the site has one way of doing this and this is it. */
+.curtain__rule {
+  height: 1px;
+  margin-top: 14px;
+  background: var(--text);
+  scale: 0 1;
+  transform-origin: left center;
+}
+
+/* Both entrances are CSS, keyed to the attribute, so they start at the first
+   paint rather than at hydration. That is the whole reason they are not in
+   useBootReveal with everything else: a title card whose name waits for a
+   bundle to arrive is a blank rectangle on exactly the connection that needed
+   something to look at. The script's half of the move begins where these leave
+   off — see CARD in app/hooks/useBootReveal.ts.
+
+   The rule stops short of its own end because the end is the site being ready,
+   and at nine hundred milliseconds the site is not ready yet. What is left of
+   it is closed by the script, once. */
+
+@keyframes card-word {
+  from {
+    translate: 0% 160%;
+  }
+  to {
+    translate: 0% 0%;
+  }
+}
+
+@keyframes card-rule {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 0.72 1;
+  }
+}
+
+/* Not gated on [data-load], deliberately, even though it is the only state they
+   are ever seen in. Gated, the rules stop matching the instant the attribute
+   comes off — and on the one path where the script never ran, that is the
+   moment the panel starts fading, so the rule would drop back to its base width
+   of nothing and blink out from under a sheet that is still there. Ungated,
+   `both` holds the end of each move for as long as the panel lasts, and the
+   fade takes the whole card with it. Nothing watches them run early: the panel
+   above is hidden until the attribute says otherwise. */
+.curtain__word {
+  /* The short curve, because a single line of type sliding out from under an
+     edge is the small frequent move the site keeps --ease-line for — the page
+     curve's long tail would make the name read as late. */
+  animation: card-word 550ms var(--ease-line) both;
+}
+
+.curtain__rule {
+  animation: card-rule 900ms var(--ease-page) 100ms both;
 }
 
 /* --- The opening --------------------------------------------------------- */
