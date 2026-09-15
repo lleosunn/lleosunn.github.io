@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router";
-import { focusedTileImage } from "./useDeck";
 import { heroPosterOf, previewOf, projects } from "../lib/projects";
-import { ACTIVE_FROM_SCALE, ACTIVE_S, EASE } from "../lib/motion";
+import { EASE } from "../lib/motion";
 import { BOOT_CAP, preloadWhenIdle } from "../lib/preload";
 import { clear, LIVE, pieces, reduced, reveal, rollIdentity, type Reveal } from "./usePageTransition";
 import { animate } from "motion";
@@ -49,14 +48,19 @@ import { animate } from "motion";
    own is in milliseconds and has two more beats than this site has things to
    put in them (a call to action, a minimap); what transfers is the shape.
    Nothing is evenly spaced. The name arrives almost immediately, the work a
-   third of a second later, the one card the reader is actually looking at a
-   beat after the stack it came out of, and the chrome last and alone — by which
-   point the page has been readable for the better part of a second and the icon
-   row appearing is a detail rather than an event. */
+   third of a second later, and the chrome last and alone — by which point the
+   page has been readable for the better part of a second and the icon row
+   appearing is a detail rather than an event.
+
+   The reference has a fourth beat here: the focused card growing out of the
+   stack from its `activeStartScale`. That is deliberately not reproduced. Its
+   start scale, 0.8, is exactly a neighbour's scale in this deck
+   (1 / (1 + SHRINK)), so the wheel arrived looking like a row of equal cards
+   and then the middle one inflated half a second later. Leo's call: the deck
+   opens at the size it means to be. Do not put it back. */
 const SCHEDULE = {
   identity: 0.08,
   work: 0.36,
-  active: 0.5,
   chrome: 1.26
 };
 
@@ -93,44 +97,6 @@ function settled(): Promise<unknown> {
     Promise.all([fonts, image]),
     new Promise((resolve) => setTimeout(resolve, BOOT_CAP))
   ]);
-}
-
-/* The focused card settling out of the stack.
- *
- * The reference's cards arrive edge-on and the front one turns to face the
- * reader; this deck is flat, so the half of that which survives the translation
- * is the scale — the card the reader will be looking at grows into place a beat
- * after the stack that delivered it, and a beat longer than the stack took.
- *
- * Written to `scale` on the .tile rather than to the .tile__card, because
- * useDeck owns that element's `transform` and rewrites it every frame. */
-function settleFocused(): { hold: () => void; play: () => void; stop: () => void } | null {
-  const tile = focusedTileImage()?.closest<HTMLElement>(".tile");
-  if (!tile) return null;
-  let controls: ReturnType<typeof animate> | null = null;
-  const done = () => {
-    tile.style.scale = "";
-    tile.style.willChange = "";
-  };
-  return {
-    hold: () => {
-      tile.style.scale = String(ACTIVE_FROM_SCALE);
-      tile.style.willChange = "scale";
-    },
-    play: () => {
-      controls = animate(
-        tile,
-        { scale: [ACTIVE_FROM_SCALE, 1] },
-        { duration: ACTIVE_S, delay: SCHEDULE.active, ease: EASE }
-      );
-      const settle = () => requestAnimationFrame(done);
-      controls.finished.then(settle, settle);
-    },
-    stop: () => {
-      controls?.stop();
-      done();
-    }
-  };
 }
 
 /* The title card, and the only numbers on this site that were chosen rather
@@ -293,7 +259,6 @@ export function useBootReveal() {
     let cancelled = false;
     let reveals: Reveal[] = [];
     let heading: Reveal | null = null;
-    let focused: ReturnType<typeof settleFocused> = null;
 
     /* Null when there is no card to run — reduced motion, or the head script's
        timer having already taken it off — in which case everything below is the
@@ -330,14 +295,10 @@ export function useBootReveal() {
         delay: SCHEDULE.identity
       });
 
-      focused = settleFocused();
-      focused?.hold();
-
       root.removeAttribute("data-boot");
 
       heading.play();
       for (const played of reveals) played.play();
-      focused?.play();
     };
 
     /* Two waits, whichever is longer. The site being ready is the one that
@@ -378,7 +339,6 @@ export function useBootReveal() {
       root.removeAttribute("data-boot");
       title?.stop();
       heading?.stop();
-      focused?.stop();
       if (reveals.length) {
         for (const played of reveals) played.stop();
       } else {

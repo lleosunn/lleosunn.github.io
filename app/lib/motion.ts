@@ -54,17 +54,10 @@ export const PAGE_MS = 1200;
 export const REVEAL_S = 0.72;
 export const REVEAL_MS = 720;
 
-/* Its intro `activeDuration`: the focused card settling out of the stack, a
-   beat longer than the stack that brought it there. */
-export const ACTIVE_S = 0.82;
-
 /* How far a piece rises into place — its route-entrance distance, 16rem. This
    is a long way, and deliberately so: a short rise on a long curve reads as
    hesitation, where a long one reads as weight. */
 export const RISE = 160;
-
-/* Its intro `activeStartScale`: what the focused card grows from. */
-export const ACTIVE_FROM_SCALE = 0.8;
 
 /* Type, which does not fade.
  *
