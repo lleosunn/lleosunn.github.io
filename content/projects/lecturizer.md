@@ -5,7 +5,7 @@ author: Leo Sun
 date: 2024-11-01
 end_date: 2024-11-30
 slug: lecturizer
-display: true
+display: false
 tile_order: 9
 years: "Nov 2024"
 image:
