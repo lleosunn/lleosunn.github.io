@@ -13,10 +13,11 @@ import { EASE, PAGE_S, STEP_SPRING } from "../lib/motion";
  * useDeck paints the wheel from it every frame it changes, and that half of the
  * arrangement is untouched — what lives here is where the float comes from.
  *
- * It comes from a *step*. The deck has a whole-number cursor, and every input
- * this file understands does exactly one thing to it: add or subtract one. The
- * float is then a spring chasing that integer, never a quantity the input sets
- * directly.
+ * Pointer and keyboard input comes from a *step*. The deck has a whole-number
+ * cursor, and each of those inputs does exactly one thing to it: add or
+ * subtract one. The float is then a spring chasing that integer. The wheel is
+ * the exception — see its section below — it moves the float directly and
+ * the cursor catches up when the gesture ends.
  *
  * This is the reference's model (gabrielbeaugonin.com), rates and all, and it
  * is worth being explicit that it replaced a good one rather than a broken one.
@@ -50,22 +51,34 @@ import { EASE, PAGE_S, STEP_SPRING } from "../lib/motion";
 
 /* --- Wheel -------------------------------------------------------------- */
 
-/* Below this a wheel event is not a scroll. It is the low tail of a trackpad
-   gesture, or the sideways slop in a diagonal one, and stepping a card for it
-   would make the deck impossible to hold still. */
-const WHEEL_MIN = 20;
+/* The wheel is the one input that does NOT step. It moves `pos` by exactly its
+   own delta on the frame it arrives, so the tiles follow the fingers, and when
+   the events stop the deck springs to a card. Leo's call, over the reference's
+   step model, which dropped anything under 20px and then leapt a whole card.
 
-/* How long the wheel is deaf after a step, as a function of how hard that step
-   was pushed. This is the whole rate control, and it is inverted on purpose: a
-   hard flick (a big delta) unlocks sooner and therefore travels further, a
-   gentle notch waits about an eighth of a second and moves one card. Speed of
-   gesture becomes distance travelled without the deck ever tracking a
-   gesture's magnitude directly.
+   Wheel pixels per card: the dial. Lower it and a trackpad flick carries
+   further; raise it and the deck holds still harder. */
+const SLOT_PX = 440;
 
-   The base is the dial: raise it and the deck holds still harder, lower it and
-   a flick carries further. The reference's is 165; this is a touch quicker on
-   a trackpad, where the per-event deltas are small and so the wait was long. */
-const wheelCooldown = (delta: number) => Math.max(30, 130 - delta);
+/* Quiet this long after the last wheel event means the gesture is over and the
+   deck may settle. Trackpad momentum sends an event every ~16ms, so this never
+   fires mid-tail; a mouse's notches are further apart than this, so each notch
+   settles on its own. */
+const SETTLE_MS = 80;
+
+/* A gesture that left its card by at least this much meant to go somewhere,
+   even if it did not reach halfway: settle onto the next card in its direction
+   rather than falling back. A mouse notch is ~0.27 of a card at SLOT_PX, and
+   without this it would nudge and return. */
+const INTENT = 0.15;
+
+/* Where a wheel gesture that started on `from` and ended at `pos` should rest. */
+export function settleTarget(from: number, pos: number) {
+  const nearest = Math.round(pos);
+  if (nearest !== from) return nearest;
+  const moved = pos - from;
+  return Math.abs(moved) >= INTENT ? from + Math.sign(moved) : from;
+}
 
 /* --- Pointer ------------------------------------------------------------ */
 
@@ -99,9 +112,8 @@ export function wrapOffset(delta: number, count: number) {
 }
 
 /* The reference reads `deltaY` raw, which costs it Firefox: a line-mode wheel
-   reports 3, and 3 is below WHEEL_MIN, so the deck simply does not move there.
-   Normalising first is invisible everywhere it agrees and correct where it
-   does not. */
+   reports 3 lines, not pixels, and the deck barely moves there. Normalising
+   first is invisible everywhere it agrees and correct where it does not. */
 function normalizeWheel(event: WheelEvent, port: number) {
   if (event.deltaMode === 1) return event.deltaY * 16;
   if (event.deltaMode === 2) return event.deltaY * port;
@@ -190,21 +202,28 @@ export function useVirtualDeck({
 
     /* --- Wheel ---------------------------------------------------------- */
 
-    let wheelLock: ReturnType<typeof setTimeout> | null = null;
+    let settle: ReturnType<typeof setTimeout> | null = null;
+    let wheelFrom = cursor;
 
     const onWheel = (event: WheelEvent) => {
       if (event.ctrlKey) return; // pinch-zoom, not a scroll
       event.preventDefault();
-      if (wheelLock) return;
 
-      const delta = normalizeWheel(event, port);
-      const size = Math.abs(delta);
-      if (size < WHEEL_MIN) return;
+      if (settle) clearTimeout(settle);
+      else {
+        // First event of a gesture: the hand is back on the wheel, so whatever
+        // was animating gives way to it, and this is the card we left from.
+        stop();
+        wheelFrom = cursor;
+      }
+      // set(), not jump(): the spring below inherits this velocity.
+      pos.set(pos.get() + normalizeWheel(event, port) / SLOT_PX);
 
-      step(delta > 0 ? 1 : -1);
-      wheelLock = setTimeout(() => {
-        wheelLock = null;
-      }, wheelCooldown(size));
+      settle = setTimeout(() => {
+        settle = null;
+        cursor = settleTarget(wheelFrom, pos.get());
+        chase(STEP_SPRING);
+      }, SETTLE_MS);
     };
 
     /* --- Pointer -------------------------------------------------------- */
@@ -359,7 +378,7 @@ export function useVirtualDeck({
 
     return () => {
       stop();
-      if (wheelLock) clearTimeout(wheelLock);
+      if (settle) clearTimeout(settle);
       unsubscribe();
       scroller.removeEventListener("wheel", onWheel);
       scroller.removeEventListener("pointerdown", onPointerDown);
