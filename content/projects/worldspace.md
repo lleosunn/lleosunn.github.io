@@ -5,7 +5,7 @@ author: Leo Sun
 date: 2025-02-01
 end_date: 2025-02-28
 slug: worldspace
-display: true
+display: false
 tile_order: 8
 years: "Jan 2025 - Feb 2025"
 image:

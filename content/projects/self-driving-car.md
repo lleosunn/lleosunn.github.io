@@ -5,7 +5,7 @@ author: Leo Sun
 date: 2025-07-01
 end_date: 2025-07-31
 slug: self-driving-car
-display: true
+display: false
 tile_order: 7
 years: "Mar 2025 - Jul 2025"
 image:

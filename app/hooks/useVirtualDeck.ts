@@ -365,7 +365,7 @@ export function useVirtualDeck({
 
     /* preventDefault is the point of the wheel listener, so it cannot be
        passive. They are bound to the pane rather than the window so the rest of
-       the page (the resume link, the theme toggle) keeps ordinary behaviour. */
+       the page (the icon links, the theme toggle) keeps ordinary behaviour. */
     scroller.addEventListener("wheel", onWheel, { passive: false });
     scroller.addEventListener("pointerdown", onPointerDown, { passive: true });
     scroller.addEventListener("pointermove", onPointerMove, { passive: false });

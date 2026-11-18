@@ -41,16 +41,6 @@ export function GitHubIcon() {
   );
 }
 
-export function ResumeIcon() {
-  return (
-    <svg {...stroked}>
-      <path d="M14 3H6.8a.8.8 0 0 0-.8.8v16.4a.8.8 0 0 0 .8.8h10.4a.8.8 0 0 0 .8-.8V7Z" />
-      <path d="M14 3v4h4" />
-      <path d="M9 12.5h6M9 16h6" />
-    </svg>
-  );
-}
-
 export function SunIcon() {
   return (
     <svg {...stroked}>

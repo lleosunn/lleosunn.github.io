@@ -39,7 +39,6 @@ const sitemap =
   `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
   [
     url(`${URL_BASE}/`, "monthly", "1.0"),
-    url(`${URL_BASE}/resume/`, "monthly", "0.8"),
     ...projects.map((p) =>
       url(
         `${URL_BASE}/projects/${p.slug}/`,
@@ -56,4 +55,4 @@ writeFileSync(`${OUT}/sitemap.xml`, sitemap);
 copyFileSync(`${OUT}/__spa-fallback.html`, `${OUT}/404.html`);
 writeFileSync(`${OUT}/.nojekyll`, "");
 
-console.log(`postbuild: sitemap.xml (${projects.length + 2} urls), 404.html, .nojekyll`);
+console.log(`postbuild: sitemap.xml (${projects.length + 1} urls), 404.html, .nojekyll`);

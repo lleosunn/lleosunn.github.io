@@ -524,10 +524,7 @@ button {
    the prose sitting inset inside a wider picture. It is a long measure for
    running text — .project's 780px is around 100 characters at this size — but a
    ragged right edge under a full-width image reads as a mistake, and matching
-   the two is what the page is asking for.
-
-   Scoped rather than set on .prose itself: /resume/ uses the same class with no
-   image over it, and there 68ch is still the right measure. */
+   the two is what the page is asking for. */
 .project .prose {
   max-width: none;
 }
@@ -921,39 +918,6 @@ button {
 
 .table-scroll {
   overflow-x: auto;
-}
-
-/* --- Resume -------------------------------------------------------------- */
-
-.inline-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--text);
-  text-decoration: none;
-  transition: background-color 150ms ease;
-}
-
-.inline-action:hover {
-  background: var(--surface);
-}
-
-.inline-action svg {
-  width: 16px;
-  height: 16px;
-  color: var(--muted);
-}
-
-.pdf-frame {
-  width: 100%;
-  height: min(76vh, 900px);
-  margin-top: 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
 }
 
 /* --- Smooth scroll ------------------------------------------------------- */

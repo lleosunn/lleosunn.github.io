@@ -8,7 +8,7 @@ import {
 } from "react";
 import { Link, useLocation, useOutlet } from "react-router";
 import { animate } from "motion";
-import { GitHubIcon, HomeIcon, LinkedInIcon, MoonIcon, ResumeIcon, SunIcon } from "../components/Icons";
+import { GitHubIcon, HomeIcon, LinkedInIcon, MoonIcon, SunIcon } from "../components/Icons";
 import { useBootReveal } from "../hooks/useBootReveal";
 import { useDeck } from "../hooks/useDeck";
 import { captureHero } from "../hooks/useHeroFlight";
@@ -26,12 +26,12 @@ import { EASE, GLIDE, PAGE_S } from "../lib/motion";
 import { projectBySlug, projects } from "../lib/projects";
 import { site } from "../lib/site";
 
-/* The left pane is one slot fed from three sources, the same way default.html
+/* The left pane is one slot fed from two sources, the same way default.html
    fed it: the site on the home page, the project's own front matter on a
-   project, a fixed pair on /resume.
+   project.
 
    Derived from the path rather than plumbed down through route `handle`s. The
-   route set is four entries and stable, and reading it here keeps the pane a
+   route set is small and stable, and reading it here keeps the pane a
    plain function of the URL — no context, no double render, and nothing for a
    new route to forget to provide. */
 interface Pane {
@@ -43,9 +43,6 @@ interface Pane {
 function paneFor(pathname: string): Pane {
   if (pathname === "/") {
     return { title: site.title, sub: site.tagline, meta: null };
-  }
-  if (pathname.startsWith("/resume")) {
-    return { title: "Resume", sub: "Current resume as a PDF.", meta: null };
   }
   const slug = pathname.replace(/^\/projects\//, "").replace(/\/$/, "");
   const project = projectBySlug(slug);
@@ -231,8 +228,7 @@ export default function AppLayout() {
 
     /* Every one of them runs for exactly PAGE_S, so one clock retires the
        copy. A timer rather than the fade's promise because there is not always
-       a pane to fade — /resume leaving for home is a heading and nothing
-       else. */
+       a pane to fade. */
     const timer = setTimeout(drop, PAGE_S * 1000);
     return () => {
       clearTimeout(timer);
@@ -376,18 +372,6 @@ export default function AppLayout() {
           >
             <GitHubIcon />
           </a>
-          <Link
-            className="icon-btn"
-            to="/resume"
-            aria-label="Resume"
-            onClick={(event) => {
-              if (!isPlainClick(event) || pathname.startsWith("/resume")) return;
-              event.preventDefault();
-              go("/resume");
-            }}
-          >
-            <ResumeIcon />
-          </Link>
           <button
             className="icon-btn theme-toggle"
             type="button"

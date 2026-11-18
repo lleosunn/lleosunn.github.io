@@ -5,7 +5,7 @@ author: Leo Sun
 date: 2024-03-01
 end_date: 2024-03-31
 slug: scorpion-2
-display: true
+display: false
 tile_order: 10
 years: "Jun 2023 - Mar 2024"
 image:
